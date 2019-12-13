@@ -1,0 +1,31 @@
+{
+    "name": "meveto/meveto-php-sdk",
+    "description": "The Meveto php library that lets you integrate Meveto with your PHP based web applications.",
+    "type": "library",
+    "homepage": "https://meveto.com",
+    "keywords": [
+        "meveto",
+        "meveto-php",
+        "oauth",
+        "passwordless",
+        "authentication"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Zia U Rehman Khan",
+            "email": "zmajrohi323@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.2",
+        "illuminate/database": "^6.6",
+        "guzzlehttp/guzzle": "^6.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Meveto\\Client\\": "src/"
+        }
+    }
+}
