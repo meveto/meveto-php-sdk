@@ -61,9 +61,30 @@ class Validation extends Exception
         foreach($errors as $error)
         {
             $throwable .= "`{$error}`";
-            $throwable .= count($errors) == $count ? $throwable .= ')' : $throwable .= ', ';
+            $throwable .= count($errors) == $count ? ')' : ', ';
             $count++;
         }
         return new static($throwable);
+    }
+
+    /**
+     * Throws exception if current application request state is empty
+     * 
+     * @return self
+     */
+    public static function stateRequired(): self
+    {
+        return new static("Current application request state can not be empty.");
+    }
+
+    /**
+     * Throws exception if current application request state is considered short.
+     * 
+     * @param string $length Required length of the value
+     * @return self
+     */
+    public static function stateTooShort(string $length): self
+    {
+        return new static("Current application request state must be at least `{$length}` characters long.");
     }
 }

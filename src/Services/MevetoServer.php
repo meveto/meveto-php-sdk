@@ -7,6 +7,7 @@ use Meveto\Client\Exceptions\Http;
 use Meveto\Client\Exceptions\InvalidClient;
 use Meveto\Client\Exceptions\InvalidConfig;
 use Meveto\Client\Exceptions\Validation;
+use GuzzleHttp\Exception\ClientException;
 
 class MevetoServer
 {
@@ -20,7 +21,7 @@ class MevetoServer
     protected $config = [
         'id'    => '',
         'secret'      => '',
-        'scope'  => 'default',
+        'scope'  => 'default-client-access',
         'redirect_url' => '',
         'state' => '',
         'authEndpoint' => 'https://meveto.com/oauth-client',
@@ -31,9 +32,7 @@ class MevetoServer
     protected $requiredConfig = [
         'id',
         'secret',
-        'scope',
         'redirect_url',
-        'state' => '',
         'authEndpoint',
         'tokenEndpoint',
     ];
@@ -47,9 +46,12 @@ class MevetoServer
     /** @var */
     protected $aliasEndpoint;
 
+    /** @var */
+    protected $logoutEndpoint;
+
     public function __construct()
     {
-        $this->http = Client::class;
+        $this->http = new Client();
     }
 
     /**
@@ -81,11 +83,15 @@ class MevetoServer
      */
     public function config(array $config): bool
     {
+        if(empty($config)) {
+            return false;
+        }
+
         foreach($config as $key => $value)
         {
-            $value = trim($value);
+            $value = !is_array($value) ? trim($value) : $value;
 
-            if(!in_array($key, $this->config, true))
+            if(!array_key_exists($key, $this->config))
             {
                 throw InvalidConfig::keyNotValid('Meveto configuration', $key);
                 return false;
@@ -104,6 +110,27 @@ class MevetoServer
         }
 
         return true;
+    }
+
+    /**
+     * Set state for the current request
+     * @param string $state
+     * @return void
+     */
+    public function state(string $state)
+    {
+        $state = trim($state);
+        if(!empty($state))
+        {
+            if(mb_strlen($state) >= 128)
+            {
+                $this->config['state'] = $state;
+            } else {
+                throw Validation::stateTooShort('128');
+            }
+        } else {
+            throw Validation::stateRequired();
+        }
     }
 
     /**
@@ -129,23 +156,41 @@ class MevetoServer
     }
 
     /**
-     * Process a `login with Meveto` request to a client application
+     * Set the Meveto logout endpoint
+     * 
+     * @param string $api_url
+     * @return void
      */
-    public function processLogin()
+    public function logoutEndpoint(string $api_url): void
     {
-        $query = [
-            'client_id' => $this->config['id'],
-            'scope' => $this->config['scope'],
-            'response_type' => 'code',
-            'redirect_uri' =>  $this->config['redirect_url'],
-            'state' => $this->config['state']
-        ];
-        
-        $authorize_query = http_build_query($query);
+        $this->logoutEndpoint = $api_url;
+    }
 
-        $authorize_url = $this->config['authEndpoint'] . '?' . $authorize_query;
+    /**
+     * Process a `login with Meveto` request to a client application
+     * 
+     * @return string The Authorization URL
+     */
+    public function processLogin(): string
+    {
+        if(!empty($this->config['state']))
+        {
+            $query = [
+                'client_id' => $this->config['id'],
+                'scope' => $this->config['scope'],
+                'response_type' => 'code',
+                'redirect_uri' =>  $this->config['redirect_url'],
+                'state' => $this->config['state']
+            ];
+            
+            $authorize_query = http_build_query($query);
+            
+            $authorize_url = $this->config['authEndpoint'] . '?' . $authorize_query;
+            
+            return $authorize_url;
+        }
 
-        header('Location: '.$authorize_url);
+        throw InvalidConfig::stateNotSet();
     }
 
     /**
@@ -193,19 +238,24 @@ class MevetoServer
      * @throws notAuthenticated
      * @throws notAuthorized
      * @throws clientError
+     * @throws GuzzleHttp\Exception\ClientException
      */
     public function resourceOwnerData(string $token): array
     {
-        $response = $this->http->get($this->resourceEndpoint, [
-            'query' => [
-                'client_id' => $this->config['id'],
-            ],
-            'headers' => [
-                'Accept'     => 'application/json',
+        try {
+            $response = $this->http->get($this->resourceEndpoint, [
+                'query' => [
+                    'client_id' => $this->config['id'],
+                ],
+                'headers' => [
+                    'Accept'     => 'application/json',
                 'Authorization' => 'Bearer '.$token,
-            ]
-        ]);
-
+                ]
+            ]);
+        } catch(ClientException $e)
+        {
+            throw $e;
+        }
         if($response->getStatusCode() == '401')
         {
             throw Http::notAuthenticated();
@@ -276,5 +326,47 @@ class MevetoServer
         }
 
         return false;
+    }
+
+    /**
+     * Retrieve identifier for the user that logged out.
+     * 
+     * @param string $logoutToken The access token
+     * @return string
+     * 
+     * @throws clientError
+     * @throws GuzzleHttp\Exception\ClientException
+     */
+    public function logoutUser(string $logoutToken): string
+    {
+        try {
+            $response = $this->http->get($this->logoutEndpoint, [
+                'query' => [
+                    'token' => $logoutToken,
+                ],
+                'headers' => [
+                    'Accept'     => 'application/json'
+                ]
+            ]);
+        } catch(ClientException $e)
+        {
+            throw $e;
+        }
+
+        $content = json_decode((string) $response->getBody(), true);
+
+        if (isset($content["error"]))
+        {
+            throw InvalidClient::clientError($content["error_description"]);
+        }
+
+        if($content['status'] == 'Logout_User_Retrieved')
+        {
+            return $content['payload']['user'];
+        }
+        else if($content['status'] == 'Invalid_Logout_Token')
+        {
+            throw InvalidClient::clientError($content['message']);
+        }
     }
 }

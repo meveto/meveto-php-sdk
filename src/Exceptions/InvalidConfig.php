@@ -28,10 +28,20 @@ class InvalidConfig extends Validation
         foreach($supported as $arch)
         {
             $throwable .= "`{$arch}`";
-            $throwable .= count($supported) == $count ? $throwable .= '.' : $throwable .= ', ';
+            $throwable .= count($supported) == $count ? '.' : ', ';
             $count++;
         }
 
         return new static($throwable);
+    }
+
+    /**
+     * Throws exception if current application request state is not set
+     * 
+     * @return self
+     */
+    public static function stateNotSet(): self
+    {
+        return new static("Current application request state is not set.");
     }
 }

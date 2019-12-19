@@ -2,10 +2,8 @@
 
 namespace Meveto\Client;
 
-use Meveto\Client\Exceptions\Database as ExceptionsDatabase;
 use Meveto\Client\Exceptions\InvalidConfig;
 use Meveto\Client\Services\MevetoServer;
-use Meveto\Client\Services\Database;
 
 class MevetoService
 {
@@ -30,15 +28,14 @@ class MevetoService
      * 
      * @return void
      */
-    public function __construct(array $config, array $database, string $architecture = 'web')
+    public function __construct(array $config, string $architecture = 'web')
     {
-        $this->MevetoServer = MevetoServer::class;
-        $this->database = Database::class;
+        $this->MevetoServer = new MevetoServer();
         $this->setArchitecture($architecture);
         $this->setConfig($config);
-        $this->setDatabase($database);
-        $this->setResourceEndpoint("https://prod.meveto.com/api/user");
-        $this->setAliasEndpoint("https://prod.meveto.com/api/user/alias");
+        $this->setResourceEndpoint("https://prod.meveto.com/api/client/user");
+        $this->setAliasEndpoint("https://prod.meveto.com/api/client/user/alias");        
+        $this->setLogoutEndpoint("https://prod.meveto.com/api/client/user-logout");        
     }
 
     /**
@@ -69,22 +66,6 @@ class MevetoService
     }
 
     /**
-     * Set your database credentials.
-     * 
-     * @param array $credentials The credentials that will be used by this library to communicate with your database
-     * @return void
-     * 
-     * @throws keyNotValid
-     * @throws driverNotSupported
-     * @throws valueRequiredAt
-     */
-    protected function setDatabase(array $credentials): void
-    {
-        $this->isDatabaseSet = $this->database->credentials($credentials);
-        $this->database->establishConnection();
-    }
-
-    /**
      * Set the Meveto server endpoint to retrieve the resource owner info
      * 
      * @param string $api_url The endpoint
@@ -107,17 +88,40 @@ class MevetoService
     }
 
     /**
-     * Login to a client application with Meveto
+     * Set endpoint for the exchange of a logout token with a user identifier
      * 
+     * @param string $api_url The endpoint
+     * @return void
+     */
+    protected function setLogoutEndpoint(string $api_url): void
+    {
+        $this->MevetoServer->logoutEndpoint($api_url);
+    }
+
+    /**
+     * Set the architecture of the client application that is using Meveto
+     * 
+     * @param string $state Name of the architecture. Accepted values are ['web', 'rest']
      * @return void
      * 
-     * @throws configNotSet
-     * @throws databaseNotSet
+     * @throws architectureNotSupported
      */
-    public function login(): void
+    public function setState(string $state): void
+    {
+        $this->MevetoServer->state($state);
+    }
+
+    /**
+     * Login to a client application with Meveto
+     * 
+     * @return string The Authorization URL. Your application should redirect user to this URL
+     * 
+     * @throws configNotSet
+     */
+    public function login(): string
     {
         $this->validateRequestdata();
-        $this->MevetoServer->processLogin();
+        return $this->MevetoServer->processLogin();
     }
 
     /**
@@ -127,7 +131,6 @@ class MevetoService
      * @return array The array contains access_token, refresh_token and expires_in that indicates when the access token will expire.
      * 
      * @throws configNotSet
-     * @throws databaseNotSet
      * @throws clientNotFound
      * @throws clientError
      */
@@ -144,10 +147,10 @@ class MevetoService
      * @return array The resource owner information
      * 
      * @throws configNotSet
-     * @throws databaseNotSet
      * @throws notAuthenticated
      * @throws notAuthorized
      * @throws clientError
+     * @throws GuzzleHttp\Exception\ClientException
      */
     public function getResourceOwnerData(string $token): array
     {
@@ -163,7 +166,6 @@ class MevetoService
      * @return bool True if synchronization is successful false otherwise
      * 
      * @throws configNotSet
-     * @throws databaseNotSet
      * @throws notAuthenticated
      * @throws notAuthorized
      * @throws clientError
@@ -175,54 +177,30 @@ class MevetoService
     }
 
     /**
-     * Let Meveto SDK know when your application successfully logs a user in using Meveto.
+     * Get user identifier for a valid logout token.
      * 
-     * @param string $user The user identifier that was used to login the user
-     * @return void
+     * @param string $logoutToken The logout token your application's logout webhook received from Meveto
+     * @return string The user identifier
      * 
-     * @throws configNotSet
-     * @throws databaseNotSet
-     * @throws databaseError
+     * @throws clientError
+     * @throws GuzzleHttp\Exception\ClientException
      */
-    public function userLoggedIn(string $user): void
+    public function getLogoutUser(string $logoutToken): string
     {
         $this->validateRequestdata();
-        $this->database->loginUser($user);
-    }
-
-    /**
-     * Let Meveto SDK know when your application logs a user out.
-     * 
-     * @param string $user The user identifier for the user that logged out
-     * @return void
-     * 
-     * @throws configNotSet
-     * @throws databaseNotSet
-     * @throws databaseError
-     * @throws userNotFound
-     */
-    public function userLoggedOut(string $user): void
-    {
-        $this->validateRequestdata();
-        $this->database->logoutUser($user);
+        return $this->MevetoServer->logoutUser($logoutToken);
     }
 
     /**
      * Validate that Meveto configuration and database credentials have been set
      * 
      * @throws configNotSet
-     * @throws databaseNotSet
      */
     protected function validateRequestdata(): void
     {
         if (!$this->isConfigSet)
         {
             throw InvalidConfig::configNotSet();
-        }
-        
-        if(!$this->isDatabaseSet)
-        {
-            throw ExceptionsDatabase::databaseNotSet();
         }
     }
 
