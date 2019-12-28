@@ -114,14 +114,15 @@ class MevetoService
     /**
      * Login to a client application with Meveto
      * 
+     * @param string $clientToken A one time client specific Meveto login token
      * @return string The Authorization URL. Your application should redirect user to this URL
      * 
      * @throws configNotSet
      */
-    public function login(): string
+    public function login(string $clientToken = null): string
     {
         $this->validateRequestdata();
-        return $this->MevetoServer->processLogin();
+        return $this->MevetoServer->processLogin($clientToken);
     }
 
     /**

@@ -169,9 +169,10 @@ class MevetoServer
     /**
      * Process a `login with Meveto` request to a client application
      * 
+     * @param string $clientToken Meveto login token
      * @return string The Authorization URL
      */
-    public function processLogin(): string
+    public function processLogin(string $clientToken = null): string
     {
         if(!empty($this->config['state']))
         {
@@ -182,6 +183,11 @@ class MevetoServer
                 'redirect_uri' =>  $this->config['redirect_url'],
                 'state' => $this->config['state']
             ];
+
+            if($clientToken)
+            {
+                $query['client_token'] = $clientToken;
+            }
             
             $authorize_query = http_build_query($query);
             
