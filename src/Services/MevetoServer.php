@@ -170,9 +170,10 @@ class MevetoServer
      * Process a `login with Meveto` request to a client application
      * 
      * @param string $clientToken Meveto login token
+     * @param string $sharingToken An account sharing token
      * @return string The Authorization URL
      */
-    public function processLogin(string $clientToken = null): string
+    public function processLogin(string $clientToken = null, string $sharingToken = null): string
     {
         if(!empty($this->config['state']))
         {
@@ -184,9 +185,14 @@ class MevetoServer
                 'state' => $this->config['state']
             ];
 
-            if($clientToken)
+            if($clientToken !== null && $clientToken !== '')
             {
                 $query['client_token'] = $clientToken;
+            }
+
+            if($sharingToken !== null && $sharingToken !== '')
+            {
+                $query['sharing_token'] = $sharingToken;
             }
             
             $authorize_query = http_build_query($query);
