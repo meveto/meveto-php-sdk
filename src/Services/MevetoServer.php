@@ -47,7 +47,7 @@ class MevetoServer
     protected $aliasEndpoint;
 
     /** @var */
-    protected $logoutEndpoint;
+    protected $eventUserEndpoint;
 
     public function __construct()
     {
@@ -156,14 +156,14 @@ class MevetoServer
     }
 
     /**
-     * Set the Meveto logout endpoint
+     * Set the endpoint for exchanging user token for user identifier that's associated with an event
      * 
      * @param string $api_url
      * @return void
      */
-    public function logoutEndpoint(string $api_url): void
+    public function eventUserEndpoint(string $api_url): void
     {
-        $this->logoutEndpoint = $api_url;
+        $this->eventUserEndpoint = $api_url;
     }
 
     /**
@@ -341,20 +341,20 @@ class MevetoServer
     }
 
     /**
-     * Retrieve identifier for the user that logged out.
+     * Retrieve identifier for the user token.
      * 
-     * @param string $logoutToken The access token
+     * @param string $userToken The access token
      * @return string
      * 
      * @throws clientError
      * @throws GuzzleHttp\Exception\ClientException
      */
-    public function logoutUser(string $logoutToken): string
+    public function tokenUser(string $userToken): string
     {
         try {
-            $response = $this->http->get($this->logoutEndpoint, [
+            $response = $this->http->get($this->eventUserEndpoint, [
                 'query' => [
-                    'token' => $logoutToken,
+                    'token' => $userToken,
                 ],
                 'headers' => [
                     'Accept'     => 'application/json'
@@ -372,11 +372,11 @@ class MevetoServer
             throw InvalidClient::clientError($content["error_description"]);
         }
 
-        if($content['status'] == 'Logout_User_Retrieved')
+        if($content['status'] == 'Token_User_Retrieved')
         {
             return $content['payload']['user'];
         }
-        else if($content['status'] == 'Invalid_Logout_Token')
+        else if($content['status'] == 'Invalid_User_Token')
         {
             throw InvalidClient::clientError($content['message']);
         }

@@ -35,7 +35,7 @@ class MevetoService
         $this->setConfig($config);
         $this->setResourceEndpoint("https://prod.meveto.com/api/client/user");
         $this->setAliasEndpoint("https://prod.meveto.com/api/client/user/alias");        
-        $this->setLogoutEndpoint("https://prod.meveto.com/api/client/user-logout");        
+        $this->setUserEndpoint("https://prod.meveto.com/api/client/user-for-token");
     }
 
     /**
@@ -88,14 +88,14 @@ class MevetoService
     }
 
     /**
-     * Set endpoint for the exchange of a logout token with a user identifier
+     * Set endpoint for the exchange of a user token with a user identifier when a user action creates an event
      * 
      * @param string $api_url The endpoint
      * @return void
      */
-    protected function setLogoutEndpoint(string $api_url): void
+    protected function setUserEndpoint(string $api_url): void
     {
-        $this->MevetoServer->logoutEndpoint($api_url);
+        $this->MevetoServer->eventUserEndpoint($api_url);
     }
 
     /**
@@ -179,18 +179,18 @@ class MevetoService
     }
 
     /**
-     * Get user identifier for a valid logout token.
+     * Get user identifier for a valid user token.
      * 
-     * @param string $logoutToken The logout token your application's logout webhook received from Meveto
+     * @param string $userToken The user token your application's webhook received from Meveto
      * @return string The user identifier
      * 
      * @throws clientError
      * @throws GuzzleHttp\Exception\ClientException
      */
-    public function getLogoutUser(string $logoutToken): string
+    public function getTokenUser(string $userToken): string
     {
         $this->validateRequestdata();
-        return $this->MevetoServer->logoutUser($logoutToken);
+        return $this->MevetoServer->tokenUser($userToken);
     }
 
     /**
