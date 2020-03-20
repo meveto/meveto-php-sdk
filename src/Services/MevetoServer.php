@@ -24,7 +24,7 @@ class MevetoServer
         'scope'  => 'default-client-access',
         'redirect_url' => '',
         'state' => '',
-        'authEndpoint' => 'https://meveto.com/oauth-client',
+        'authEndpoint' => 'https://dashboard.meveto.com/oauth-client',
         'tokenEndpoint' => 'https://prod.meveto.com/oauth/token',
     ];
 
