@@ -1,3 +1,26 @@
+# composer vendor.s
 /vendor
-.env
+
+# root dir phar files (composer.phar, php-cs-fixer.phar, and others).
+/*.phar
+/tools/*.phar
+
+# phpunit files.
+phpunit.xml
 .phpunit.result.cache
+
+ # php-cs-fixer.
+/.php_cs
+/.php_cs.cache
+
+
+# ide/editors.
+/.idea
+/.vscode
+
+# os temp files.
+.DS_Store
+.thumbs.db
+
+# env files (just in case).
+/.env
