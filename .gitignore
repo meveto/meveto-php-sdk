@@ -1,6 +1,9 @@
 # composer vendor.s
 /vendor
 
+# coverage reports.
+/coverage
+
 # root dir phar files (composer.phar, php-cs-fixer.phar, and others).
 /*.phar
 /tools/*.phar
