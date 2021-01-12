@@ -8,9 +8,10 @@ class Validation extends Exception
 {
     /**
      * Throws exception for a missing value that is required
-     * 
-     * @param string $keyLocation Location where the exception occured.
+     *
+     * @param string $keyLocation Location where the exception occurred.
      * @param string $invalidKey
+     *
      * @return self
      */
     public static function valueRequiredAt(string $keyLocation, string $invalidKey): self
@@ -20,10 +21,11 @@ class Validation extends Exception
 
     /**
      * Throws exception for an invalid value inside a configuration array
-     * 
-     * @param string $keyLocation Location where the exception occured.
+     *
+     * @param string $keyLocation Location where the exception occurred.
      * @param string $invalidKey
      * @param mixed $expectedValue
+     *
      * @return self
      */
     public static function valueNotValidAt(string $keyLocation, string $invalidKey, $expectedValue = null): self
@@ -38,9 +40,10 @@ class Validation extends Exception
 
     /**
      * Throws exception for an invalid key inside a configuration array
-     * 
-     * @param string $keyLocation Location where the exception occured.
+     *
+     * @param string $keyLocation Location where the exception occurred.
      * @param string $invalidKey
+     *
      * @return self
      */
     public static function keyNotValid(string $keyLocation, string $invalidKey): self
@@ -50,37 +53,39 @@ class Validation extends Exception
 
     /**
      * Throws exception if input data validation errors are returned by Meveto server
-     * 
+     *
      * @param array $errors The errors returned
+     *
      * @return self
      */
     public static function inputDataInvalid(array $errors): self
     {
-        $throwable = "The following errors occurred while processing your request: (";
+        $throwable = 'The following errors occurred while processing your request: (';
         $count = 1;
-        foreach($errors as $error)
-        {
+        foreach ($errors as $error) {
             $throwable .= "`{$error}`";
             $throwable .= count($errors) == $count ? ')' : ', ';
             $count++;
         }
+
         return new static($throwable);
     }
 
     /**
      * Throws exception if current application request state is empty
-     * 
+     *
      * @return self
      */
     public static function stateRequired(): self
     {
-        return new static("Current application request state can not be empty.");
+        return new static('Current application request state can not be empty.');
     }
 
     /**
      * Throws exception if current application request state is considered short.
-     * 
+     *
      * @param string $length Required length of the value
+     *
      * @return self
      */
     public static function stateTooShort(string $length): self
