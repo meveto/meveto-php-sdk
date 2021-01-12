@@ -43,6 +43,7 @@
     "tools": [
       "@php -r \"copy('https://cs.symfony.com/download/php-cs-fixer-v2.phar', 'tools/php-cs-fixer.phar');\""
     ],
+    "test": "@php vendor/bin/phpunit --coverage-html=coverage",
     "lint": "@php tools/php-cs-fixer.phar fix",
     "lint:dry": "@php tools/php-cs-fixer.phar fix --dry-run"
   }
