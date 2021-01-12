@@ -4,20 +4,38 @@ namespace Meveto\Client\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use Meveto\Client\Exceptions\Http;
 use Meveto\Client\Exceptions\InvalidClient;
 use Meveto\Client\Exceptions\InvalidConfig;
 use Meveto\Client\Exceptions\Validation;
 
+/**
+ * Class MevetoServer.
+ */
 class MevetoServer
 {
-    /** @var */
-    protected $architectures = ['web', 'rest'];
+    /**
+     * @var array
+     */
+    protected $architectures = [
+        'web',
+        'rest',
+    ];
 
-    /** @var */
+    /**
+     * @var string
+     */
     protected $architecture;
 
-    /** @var array */
+    /**
+     * @var int
+     */
+    protected $stateLength = 128;
+
+    /**
+     * @var array
+     */
     protected $config = [
         'id'    => '',
         'secret'      => '',
@@ -28,7 +46,9 @@ class MevetoServer
         'tokenEndpoint' => 'https://prod.meveto.com/oauth/token',
     ];
 
-    /** @var array */
+    /**
+     * @var array
+     */
     protected $requiredConfig = [
         'id',
         'secret',
@@ -37,21 +57,35 @@ class MevetoServer
         'tokenEndpoint',
     ];
 
-    /** @var */
+    /**
+     * @var Client
+     */
     protected $http;
 
-    /** @var */
+    /**
+     * @var string
+     */
     protected $resourceEndpoint;
 
-    /** @var */
+    /**
+     * @var string
+     */
     protected $aliasEndpoint;
 
-    /** @var */
+    /**
+     * @var string
+     */
     protected $eventUserEndpoint;
 
-    public function __construct()
+    /**
+     * MevetoServer constructor.
+     *
+     * @param Client|null $client
+     */
+    public function __construct(Client $client = null)
     {
-        $this->http = new Client();
+        // assign new client instance, if none.
+        $this->http = $client ?: new Client();
     }
 
     /**
@@ -62,15 +96,14 @@ class MevetoServer
      * @throws InvalidConfig
      *
      * @return void
-     *
      */
     public function architecture(string $architecture): void
     {
-        if (! in_array($architecture, $this->architectures)) {
+        if (! in_array($architecture, $this->architectures, true)) {
             throw InvalidConfig::architectureNotSupported($architecture, $this->architectures);
-        } else {
-            $this->architecture = $architecture;
         }
+
+        $this->architecture = $architecture;
     }
 
     /**
@@ -78,8 +111,7 @@ class MevetoServer
      *
      * @param array $config The Meveto configuration array
      *
-     * @throws keyNotValid
-     * @throws valueRequiredAt
+     * @throws
      *
      * @return bool
      *
@@ -95,16 +127,10 @@ class MevetoServer
 
             if (! array_key_exists($key, $this->config)) {
                 throw InvalidConfig::keyNotValid('Meveto configuration', $key);
-
-                return false;
             }
 
-            if ($value == '' || $value === null) {
-                if (in_array($key, $this->requiredConfig, true)) {
-                    throw InvalidConfig::valueRequiredAt('Meveto configuration', $key);
-
-                    return false;
-                }
+            if (empty($value) && in_array($key, $this->requiredConfig, true)) {
+                throw InvalidConfig::valueRequiredAt('Meveto configuration', $key);
             }
 
             $this->config[$key] = $value;
@@ -118,20 +144,26 @@ class MevetoServer
      *
      * @param string $state
      *
+     * @throws Validation
+     *
      * @return void
      */
-    public function state(string $state)
+    public function state(string $state): void
     {
         $state = trim($state);
-        if (! empty($state)) {
-            if (mb_strlen($state) >= 128) {
-                $this->config['state'] = $state;
-            } else {
-                throw Validation::stateTooShort('128');
-            }
-        } else {
+
+        // throw if empty state.
+        if (empty($state)) {
             throw Validation::stateRequired();
         }
+
+        // throw if too short state size.
+        if (mb_strlen($state) < $this->stateLength) {
+            throw Validation::stateTooShort((string) $this->stateLength);
+        }
+
+        // assign on config.
+        $this->config['state'] = $state;
     }
 
     /**
@@ -173,10 +205,13 @@ class MevetoServer
     /**
      * Process a `login with Meveto` request to a client application
      *
-     * @param string $clientToken Meveto login token
-     * @param string $sharingToken An account sharing token
+     * @param string|null $clientToken Meveto login token
+     * @param string|null $sharingToken An account sharing token
+     *
+     * @throws InvalidConfig
      *
      * @return string The Authorization URL
+     *
      */
     public function processLogin(string $clientToken = null, string $sharingToken = null): string
     {
@@ -199,9 +234,7 @@ class MevetoServer
 
             $authorize_query = http_build_query($query);
 
-            $authorize_url = $this->config['authEndpoint'] . '?' . $authorize_query;
-
-            return $authorize_url;
+            return $this->config['authEndpoint'] . '?' . $authorize_query;
         }
 
         throw InvalidConfig::stateNotSet();
@@ -212,11 +245,13 @@ class MevetoServer
      *
      * @param string $authCode The authentication code
      *
-     * @throws clientNotFound
-     * @throws clientError
+     * @throws-variation clientNotFound
+     * @throws-variation clientError
+     *
+     * @throws InvalidClient
+     * @throws GuzzleException
      *
      * @return array
-     *
      */
     public function accessToken(string $authCode): array
     {
@@ -233,14 +268,14 @@ class MevetoServer
         $content = json_decode((string) $response->getBody(), true);
 
         if (isset($content['error'])) {
-            if ($content['error'] == 'invalid_client') {
+            if ($content['error'] === 'invalid_client') {
                 throw InvalidClient::clientNotFound();
-            } else {
-                throw InvalidClient::clientError($content['error_description']);
             }
-        } else {
-            return $content;
+
+            throw InvalidClient::clientError($content['error_description']);
         }
+
+        return $content;
     }
 
     /**
@@ -248,13 +283,16 @@ class MevetoServer
      *
      * @param string $token The access token
      *
-     * @throws notAuthenticated
-     * @throws notAuthorized
-     * @throws clientError
-     * @throws GuzzleHttp\Exception\ClientException
-     *
      * @return array The resource owner information
      *
+     * @throws-variation notAuthorized
+     * @throws-variation notAuthenticated
+     * @throws-variation clientError
+     *
+     * @throws ClientException
+     * @throws InvalidClient
+     * @throws Http
+     * @throws GuzzleException
      */
     public function resourceOwnerData(string $token): array
     {
@@ -271,10 +309,10 @@ class MevetoServer
         } catch (ClientException $e) {
             throw $e;
         }
-        if ($response->getStatusCode() == '401') {
+        if ($response->getStatusCode() === 401) {
             throw Http::notAuthenticated();
         }
-        if ($response->getStatusCode() == '403') {
+        if ($response->getStatusCode() === 403) {
             throw Http::notAuthorized();
         }
 
@@ -283,9 +321,12 @@ class MevetoServer
         if (isset($content['error'])) {
             throw InvalidClient::clientError($content['error_description']);
         }
-        if (isset($content['payload'])) {
-            return $content['payload'];
+
+        if (! isset($content['payload'])) {
+            throw InvalidClient::clientError('Empty payload');
         }
+
+        return $content['payload'];
     }
 
     /**
@@ -294,12 +335,16 @@ class MevetoServer
      * @param string $token The access token
      * @param string $user The local user identifier
      *
-     * @throws notAuthenticated
-     * @throws notAuthorized
-     * @throws clientError
+     * @throws-variation notAuthorized
+     * @throws-variation clientError
+     * @throws-variation notAuthenticated
+     *
+     * @throws InvalidClient
+     * @throws Validation
+     * @throws GuzzleException
+     * @throws Http
      *
      * @return bool True if synchronization is successful false otherwise
-     *
      */
     public function synchronizeUserID(string $token, string $user): bool
     {
@@ -314,10 +359,10 @@ class MevetoServer
             ],
         ]);
 
-        if ($response->getStatusCode() == '401') {
+        if ($response->getStatusCode() === 401) {
             throw Http::notAuthenticated();
         }
-        if ($response->getStatusCode() == '403') {
+        if ($response->getStatusCode() === 403) {
             throw Http::notAuthorized();
         }
 
@@ -327,9 +372,11 @@ class MevetoServer
             throw InvalidClient::clientError($content['error_description']);
         }
 
-        if ($content['status'] == 'Alias_Added_Successfully') {
+        if ($content['status'] === 'Alias_Added_Successfully') {
             return true;
-        } elseif ($content['status'] == 'Input_Data_Validation_Failed') {
+        }
+
+        if ($content['status'] === 'Input_Data_Validation_Failed') {
             throw Validation::inputDataInvalid($content['errors']);
         }
 
@@ -341,10 +388,13 @@ class MevetoServer
      *
      * @param string $userToken The access token
      *
-     * @throws clientError
-     * @throws GuzzleHttp\Exception\ClientException
+     * @throws InvalidClient
+     * @throws GuzzleException
+     * @throws ClientException
      *
      * @return string
+     *
+     * @throws-variation clientError
      *
      */
     public function tokenUser(string $userToken): string
@@ -368,10 +418,14 @@ class MevetoServer
             throw InvalidClient::clientError($content['error_description']);
         }
 
-        if ($content['status'] == 'Token_User_Retrieved') {
-            return $content['payload']['user'];
-        } elseif ($content['status'] == 'Invalid_User_Token') {
+        if ($content['status'] !== 'Token_User_Retrieved') {
+            throw InvalidClient::clientError('Error retrieving token.');
+        }
+
+        if ($content['status'] === 'Invalid_User_Token') {
             throw InvalidClient::clientError($content['message']);
         }
+
+        return $content['payload']['user'];
     }
 }
