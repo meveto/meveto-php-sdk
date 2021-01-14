@@ -5,6 +5,8 @@ composer.lock
 
 # coverage reports.
 /coverage
+# clover.xml (codecov).
+/clover.xml
 
 # root dir phar files (composer.phar, php-cs-fixer.phar, and others).
 /*.phar
