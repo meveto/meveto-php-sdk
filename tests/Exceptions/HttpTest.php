@@ -34,4 +34,16 @@ class HttpTest extends TestCase
         // assert message matches (partially).
         static::assertStringContainsString('could not authenticate', $exception->getMessage());
     }
+
+    /**
+     * Test NotAuthenticatedException with custom code.
+     */
+    public function testCustomCodeNotAuthenticatedException(): void
+    {
+        // create the exception instance.
+        $exception = new NotAuthenticatedException('', 999);
+
+        // assert code matches.
+        static::assertEquals(999, $exception->getCode());
+    }
 }
