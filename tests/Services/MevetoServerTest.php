@@ -312,6 +312,6 @@ class MevetoServerTest extends MevetoTestCase
      */
     protected function generateRandomState($length = 128): string
     {
-        return mb_substr(urlencode(base64_encode(utf8_encode(random_bytes($length)))), 0, $length);
+        return mb_substr(bin2hex(random_bytes($length)), 0, $length);
     }
 }
