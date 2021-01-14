@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class HttpTest extends TestCase
 {
     /**
-     * Test Http::notAuthorized()
+     * Test NotAuthorizedException.
      */
     public function testNotAuthorizedException(): void
     {
@@ -24,7 +24,7 @@ class HttpTest extends TestCase
     }
 
     /**
-     * Test Http::notAuthenticated()
+     * Test NotAuthenticatedException.
      */
     public function testNotAuthenticatedException(): void
     {

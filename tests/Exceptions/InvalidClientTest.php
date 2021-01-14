@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class InvalidClientTest extends TestCase
 {
     /**
-     * Test InvalidClient::clientNotFound()
+     * Test ClientNotFoundException.
      */
     public function testClientNotFound(): void
     {
@@ -24,7 +24,7 @@ class InvalidClientTest extends TestCase
     }
 
     /**
-     * Test InvalidClient::clientError()
+     * Test ClientErrorException.
      */
     public function testClientError(): void
     {

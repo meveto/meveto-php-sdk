@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class ValidationTest extends TestCase
 {
     /**
-     * Test Validation::valueRequiredAt()
+     * Test ValueRequiredAtException.
      */
     public function testValueRequiredAt(): void
     {
@@ -31,7 +31,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * Test Validation::valueNotValidAt()
+     * Test ValueNotValidAtException.
      */
     public function testValueNotValidAt(): void
     {
@@ -46,7 +46,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * Test Validation::keyNotValid()
+     * Test KeyNotValidException.
      */
     public function testKeyNotValid(): void
     {
@@ -61,7 +61,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * Test Validation::inputDataInvalid()
+     * Test InputDataInvalidException.
      */
     public function testInputDataInvalid(): void
     {
@@ -76,7 +76,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * Test Validation::stateRequired()
+     * Test StateRequiredException.
      */
     public function testStateRequired(): void
     {
@@ -91,7 +91,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * Test Validation::stateTooShort()
+     * Test StateTooShortException.
      */
     public function testStateTooShort(): void
     {

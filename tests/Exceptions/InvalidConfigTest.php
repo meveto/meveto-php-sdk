@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 class InvalidConfigTest extends TestCase
 {
     /**
-     * Test InvalidConfig::configNotSet()
+     * Test ConfigNotSetException.
      */
     public function testConfigNotSet(): void
     {
@@ -25,7 +25,7 @@ class InvalidConfigTest extends TestCase
     }
 
     /**
-     * Test InvalidConfig::architectureNotSupported()
+     * Test ArchitectureNotSupportedException.
      */
     public function testArchitectureNotSupported(): void
     {
@@ -44,7 +44,7 @@ class InvalidConfigTest extends TestCase
     }
 
     /**
-     * Test InvalidConfig::stateNotSet()
+     * Test StateNotSetException.
      */
     public function testStateNotSet(): void
     {
