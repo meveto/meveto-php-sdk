@@ -3,13 +3,18 @@ name: tests
 on: [push, pull_request]
 jobs:
   test:
-    name: tests-php-${{ matrix.php-versions }}-on-${{ matrix.operating-system }}
+    name: tests-php-${{ matrix.php-versions }}
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        operating-system: [ubuntu-latest]
-        php-versions: ['7.2', '7.3', '7.4', '8.0']
+        operating-system:
+          - 'ubuntu-20.04'
+        php-versions:
+          - '7.2'
+          - '7.3'
+          - '7.4'
+          - '8.0'
     steps:
       # checkout.
       - name: checkout
