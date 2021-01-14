@@ -2,39 +2,53 @@
 
 namespace Meveto\Client;
 
-use Meveto\Client\Exceptions\InvalidConfig;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
+use Meveto\Client\Exceptions\Http\NotAuthenticatedException;
+use Meveto\Client\Exceptions\Http\NotAuthorizedException;
+use Meveto\Client\Exceptions\InvalidClient\ClientErrorException;
+use Meveto\Client\Exceptions\InvalidClient\ClientNotFoundException;
+use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
+use Meveto\Client\Exceptions\InvalidConfig\ConfigNotSetException;
+use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
+use Meveto\Client\Exceptions\Validation\InputDataInvalidException;
+use Meveto\Client\Exceptions\Validation\KeyNotValidException;
+use Meveto\Client\Exceptions\Validation\StateRequiredException;
+use Meveto\Client\Exceptions\Validation\StateTooShortException;
+use Meveto\Client\Exceptions\Validation\ValueRequiredAtException;
 use Meveto\Client\Services\MevetoServer;
 
 class MevetoService
 {
     /**
-     * @var \Meveto\Client\Services\MevetoServer
+     * @var MevetoServer
      */
     protected $MevetoServer;
 
-    /** @var \Meveto\Client\Services\Database */
-    protected $database;
-
-    /** @var */
+    /**
+     * @var bool
+     */
     protected $isConfigSet = false;
-
-    /** @var */
-    protected $isDatabaseSet = false;
 
     /**
      * @param array $config The Meveto configuration array
-     * @param array $database The database credentials array for your application. The SDK will use these credentials to communicate
-     *                        to communicate with your database. The Meveto servers do not need these credentials at all and hence these will never be
-     *                        sent any where.
      * @param string $architecture The architecture of your application. It is set to web by default
      *
-     * @return void
+     * @throws ArchitectureNotSupportedException
+     * @throws KeyNotValidException
+     * @throws ValueRequiredAtException
      */
     public function __construct(array $config, string $architecture = 'web')
     {
+        // start server instance.
         $this->MevetoServer = new MevetoServer();
+
+        // set arch.
         $this->setArchitecture($architecture);
+        // set config.
         $this->setConfig($config);
+
+        // set urls.
         $this->setResourceEndpoint('https://prod.meveto.com/api/client/user');
         $this->setAliasEndpoint('https://prod.meveto.com/api/client/user/alias');
         $this->setUserEndpoint('https://prod.meveto.com/api/client/user-for-token');
@@ -45,10 +59,9 @@ class MevetoService
      *
      * @param string $arch Name of the architecture. Accepted values are ['web', 'rest']
      *
-     * @throws architectureNotSupported
-     *
      * @return void
      *
+     * @throws Exceptions\InvalidConfig\ArchitectureNotSupportedException
      */
     protected function setArchitecture(string $arch): void
     {
@@ -60,8 +73,9 @@ class MevetoService
      *
      * @param array $config The Meveto configuration array
      *
-     * @throws keyNotValid
-     * @throws valueRequiredAt
+     *
+     * @throws KeyNotValidException
+     * @throws ValueRequiredAtException
      *
      * @return void
      *
@@ -112,7 +126,8 @@ class MevetoService
      *
      * @param string $state Name of the architecture. Accepted values are ['web', 'rest']
      *
-     * @throws architectureNotSupported
+     * @throws StateRequiredException
+     * @throws StateTooShortException
      *
      * @return void
      *
@@ -125,13 +140,11 @@ class MevetoService
     /**
      * Login to a client application with Meveto
      *
-     * @param string $clientToken A one time client specific Meveto login token
-     * @param string $sharingToken An account sharing token
-     *
-     * @throws configNotSet
+     * @param string|null $clientToken A one time client specific Meveto login token
+     * @param string|null $sharingToken An account sharing token
      *
      * @return string The Authorization URL. Your application should redirect user to this URL
-     *
+     * @throws StateNotSetException
      */
     public function login(string $clientToken = null, string $sharingToken = null): string
     {
@@ -145,9 +158,9 @@ class MevetoService
      *
      * @param string $authCode The Meveto authorization code
      *
-     * @throws configNotSet
-     * @throws clientNotFound
-     * @throws clientError
+     * @throws ClientNotFoundException
+     * @throws ClientErrorException
+     * @throws GuzzleException
      *
      * @return array The array contains access_token, refresh_token and expires_in that indicates when the access token will expire.
      *
@@ -164,11 +177,11 @@ class MevetoService
      *
      * @param string $token The Meveto access token
      *
-     * @throws configNotSet
-     * @throws notAuthenticated
-     * @throws notAuthorized
-     * @throws clientError
-     * @throws GuzzleHttp\Exception\ClientException
+     * @throws ClientException
+     * @throws NotAuthenticatedException
+     * @throws NotAuthorizedException
+     * @throws ClientErrorException
+     * @throws GuzzleException
      *
      * @return array The resource owner information
      *
@@ -186,10 +199,11 @@ class MevetoService
      * @param string $token The Meveto access token
      * @param string $user A local (at your app) user identifier that is to be synchronized to a Meveto identifier
      *
-     * @throws configNotSet
-     * @throws notAuthenticated
-     * @throws notAuthorized
-     * @throws clientError
+     * @throws GuzzleException
+     * @throws NotAuthenticatedException
+     * @throws NotAuthorizedException
+     * @throws ClientErrorException
+     * @throws InputDataInvalidException
      *
      * @return bool True if synchronization is successful false otherwise
      *
@@ -206,8 +220,9 @@ class MevetoService
      *
      * @param string $userToken The user token your application's webhook received from Meveto
      *
-     * @throws clientError
-     * @throws GuzzleHttp\Exception\ClientException
+     * @throws GuzzleException
+     * @throws ClientErrorException
+     *
      *
      * @return string The user identifier
      *
@@ -222,12 +237,12 @@ class MevetoService
     /**
      * Validate that Meveto configuration and database credentials have been set
      *
-     * @throws configNotSet
+     * @throws ConfigNotSetException
      */
-    protected function validateRequestdata(): void
+    protected function validateRequestData(): void
     {
         if (! $this->isConfigSet) {
-            throw InvalidConfig::configNotSet();
+            throw new ConfigNotSetException('');
         }
     }
 }

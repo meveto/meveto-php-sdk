@@ -266,9 +266,6 @@ class MevetoServer
      *
      * @param string $authCode The authentication code
      *
-     * @throws-variation clientNotFound
-     * @throws-variation clientError
-     *
      * @throws ClientNotFoundException
      * @throws ClientErrorException
      * @throws GuzzleException
