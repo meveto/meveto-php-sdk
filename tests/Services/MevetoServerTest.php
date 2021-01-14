@@ -4,6 +4,7 @@ namespace Tests\Services;
 
 use GuzzleHttp\Client;
 use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
+use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
 use Meveto\Client\Exceptions\Validation\StateRequiredException;
 use Meveto\Client\Exceptions\Validation\StateTooShortException;
 use Meveto\Client\Services\MevetoServer;
@@ -230,6 +231,54 @@ class MevetoServerTest extends MevetoTestCase
     }
 
     /**
+     * Test getSupportedArchitectures method.
+     */
+    public function testGettingSupportedArchitectures(): void
+    {
+        // list of predefined architectures.
+        $supported = ['web', 'rest'];
+
+        // create a server instance.
+        $server = new MevetoServer();
+
+        // assert supported architectures matches predefined list.
+        static::assertEquals($supported, $server->getSupportedArchitectures());
+    }
+
+    public function testProcessLogin(): void
+    {
+        // create client mock.
+        $client = $this->createMock(Client::class);
+
+        // create server instance.
+        $server = new MevetoServer($client);
+
+        // fake client and sharing tokens.
+        $clientToken = 'foo';
+        $sharingToken = 'bar';
+
+        // try without setting state first.
+        try {
+            $authQuery = $server->processLogin($clientToken, $sharingToken);
+        } catch (\Exception $e) {
+            // assert a state is required before process login.
+            static::assertInstanceOf(StateNotSetException::class, $e);
+        }
+
+        // generate state.
+        $state = $this->generateRandomState(128);
+        // set state.
+        $server->state($state);
+
+        // do process login to get auth query.
+        $authQuery = $server->processLogin($clientToken, $sharingToken);
+
+        static::assertStringContainsString('client_token=foo', $authQuery);
+        static::assertStringContainsString('sharing_token=bar', $authQuery);
+        static::assertStringContainsString("state={$state}", $authQuery);
+    }
+
+    /**
      * Get a protected/private value from a given server instance.
      *
      * @param MevetoServer $server
@@ -263,6 +312,6 @@ class MevetoServerTest extends MevetoTestCase
      */
     protected function generateRandomState($length = 128): string
     {
-        return mb_substr(base64_encode(utf8_encode(random_bytes($length))), 0, $length);
+        return mb_substr(urlencode(base64_encode(utf8_encode(random_bytes($length)))), 0, $length);
     }
 }

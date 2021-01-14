@@ -459,4 +459,14 @@ class MevetoServer
         // return the value on the http property.
         return $this->http;
     }
+
+    /**
+     * Returns the list of supported architectures.
+     *
+     * @return array|string[]
+     */
+    public function getSupportedArchitectures(): array
+    {
+        return $this->architectures;
+    }
 }

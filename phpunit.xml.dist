@@ -5,6 +5,7 @@
          colors="true">
     <logging>
         <log type="coverage-clover" target="clover.xml"/>
+        <log type="coverage-text" target="php://stdout"/>
     </logging>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
