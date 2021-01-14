@@ -66,7 +66,7 @@ class ValidationTest extends TestCase
     public function testInputDataInvalid(): void
     {
         // create the exception instance.
-        $exception = New InputDataInvalidException([ 'a', 'b']);
+        $exception = new InputDataInvalidException([ 'a', 'b']);
 
         // assert message matches (partially).
         static::assertStringContainsString(

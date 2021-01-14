@@ -59,9 +59,10 @@ class MevetoService
      *
      * @param string $arch Name of the architecture. Accepted values are ['web', 'rest']
      *
+     * @throws Exceptions\InvalidConfig\ArchitectureNotSupportedException
+     *
      * @return void
      *
-     * @throws Exceptions\InvalidConfig\ArchitectureNotSupportedException
      */
     protected function setArchitecture(string $arch): void
     {
@@ -72,7 +73,6 @@ class MevetoService
      * Set configuration for Meveto.
      *
      * @param array $config The Meveto configuration array
-     *
      *
      * @throws KeyNotValidException
      * @throws ValueRequiredAtException
@@ -143,8 +143,9 @@ class MevetoService
      * @param string|null $clientToken A one time client specific Meveto login token
      * @param string|null $sharingToken An account sharing token
      *
-     * @return string The Authorization URL. Your application should redirect user to this URL
      * @throws StateNotSetException
+     *
+     * @return string The Authorization URL. Your application should redirect user to this URL
      */
     public function login(string $clientToken = null, string $sharingToken = null): string
     {
@@ -222,7 +223,6 @@ class MevetoService
      *
      * @throws GuzzleException
      * @throws ClientErrorException
-     *
      *
      * @return string The user identifier
      *

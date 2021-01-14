@@ -13,6 +13,6 @@ class StateRequiredException extends MevetoException
      * @var string[] Default message lines.
      */
     protected $defaultMessageLines = [
-        'Current application request state can not be empty.'
+        'Current application request state can not be empty.',
     ];
 }

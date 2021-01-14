@@ -118,11 +118,11 @@ class MevetoServer
      *
      * @param array $config The Meveto configuration array
      *
+     * @throws KeyNotValidException
+     * @throws ValueRequiredAtException
      *
      * @return bool
      *
-     * @throws KeyNotValidException
-     * @throws ValueRequiredAtException
      */
     public function config(array $config): bool
     {
@@ -152,10 +152,11 @@ class MevetoServer
      *
      * @param string $state
      *
-     * @return void
-     *
      * @throws StateRequiredException
      * @throws StateTooShortException
+     *
+     * @return void
+     *
      */
     public function state(string $state): void
     {
@@ -352,13 +353,14 @@ class MevetoServer
      * @param string $token The access token
      * @param string $user The local user identifier
      *
-     * @return bool True if synchronization is successful false otherwise
-     *
      * @throws GuzzleException
      * @throws NotAuthenticatedException
      * @throws NotAuthorizedException
      * @throws ClientErrorException
      * @throws InputDataInvalidException
+     *
+     * @return bool True if synchronization is successful false otherwise
+     *
      */
     public function synchronizeUserID(string $token, string $user): bool
     {
@@ -402,10 +404,11 @@ class MevetoServer
      *
      * @param string $userToken The access token
      *
-     * @return string
-     *
      * @throws GuzzleException
      * @throws ClientErrorException
+     *
+     * @return string
+     *
      */
     public function tokenUser(string $userToken): string
     {

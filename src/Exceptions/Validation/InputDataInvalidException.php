@@ -14,7 +14,7 @@ class InputDataInvalidException extends MevetoException
      * @var string[] Default message lines.
      */
     protected $defaultMessageLines = [
-        'The following errors occurred while processing your request:'
+        'The following errors occurred while processing your request:',
     ];
 
     /***

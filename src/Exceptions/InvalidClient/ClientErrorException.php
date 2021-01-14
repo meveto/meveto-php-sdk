@@ -3,7 +3,6 @@
 namespace Meveto\Client\Exceptions\InvalidClient;
 
 use Meveto\Client\Exceptions\MevetoException;
-use Throwable;
 
 /**
  * Class ClientErrorException.

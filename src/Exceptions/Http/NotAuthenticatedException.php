@@ -3,7 +3,6 @@
 namespace Meveto\Client\Exceptions\Http;
 
 use Meveto\Client\Exceptions\MevetoException;
-use Throwable;
 
 /**
  * Class NotAuthenticatedException.

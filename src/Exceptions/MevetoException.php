@@ -82,6 +82,7 @@ abstract class MevetoException extends Exception
 
     /**
      * Quote implode a list of values.
+     *
      * @param array $values
      *
      * @return string
