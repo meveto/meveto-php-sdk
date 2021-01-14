@@ -1,5 +1,7 @@
 # composer vendor.s
 /vendor
+# composer.lock should be not commited on libraries.
+composer.lock
 
 # coverage reports.
 /coverage
