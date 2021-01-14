@@ -43,3 +43,7 @@ jobs:
       # tests.
       - name: phpunit
         run: vendor/bin/phpunit --coverage-text
+
+      # codecov.io
+      - name: codecov
+        run: bash <(curl -s https://codecov.io/bash)
