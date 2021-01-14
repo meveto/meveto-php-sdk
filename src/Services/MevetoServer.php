@@ -441,4 +441,22 @@ class MevetoServer
 
         return $content['payload']['user'];
     }
+
+    /**
+     * Getter/setter for $this->http.
+     *
+     * @param Client|null $client
+     *
+     * @return Client
+     */
+    public function http(Client $client = null): ?Client
+    {
+        // if a instance was passed, set it.
+        if ($client) {
+            $this->http = $client;
+        }
+
+        // return the value on the http property.
+        return $this->http;
+    }
 }

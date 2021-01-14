@@ -9,5 +9,4 @@ use PHPUnit\Framework\TestCase;
  */
 abstract class MevetoTestCase extends TestCase
 {
-
 }
