@@ -26,7 +26,7 @@ class ArchitectureNotSupportedException extends MevetoException
     public function __construct(string $architecture, array $supported = [], $code = 0, Throwable $previous = null)
     {
         // supported list.
-        $supportedList = implode(', ', $supported);
+        $supportedList = $this->quoteImplode($supported);
 
         // build custom message prefix.
         $prefix = "`{$architecture}` is not supported.";

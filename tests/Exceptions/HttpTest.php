@@ -2,7 +2,8 @@
 
 namespace Tests\Exceptions;
 
-use Meveto\Client\Exceptions;
+use Meveto\Client\Exceptions\Http\NotAuthenticatedException;
+use Meveto\Client\Exceptions\Http\NotAuthorizedException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,7 +17,7 @@ class HttpTest extends TestCase
     public function testNotAuthorizedException(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Http::notAuthorized();
+        $exception = new NotAuthorizedException();
 
         // assert message matches (partially).
         static::assertStringContainsString('not authorized', $exception->getMessage());
@@ -28,7 +29,7 @@ class HttpTest extends TestCase
     public function testNotAuthenticatedException(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Http::notAuthenticated();
+        $exception = new NotAuthenticatedException();
 
         // assert message matches (partially).
         static::assertStringContainsString('could not authenticate', $exception->getMessage());

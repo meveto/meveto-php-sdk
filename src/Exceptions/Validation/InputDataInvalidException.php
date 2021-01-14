@@ -27,7 +27,7 @@ class InputDataInvalidException extends MevetoException
     public function __construct(array $errors = [], $code = 0, Throwable $previous = null)
     {
         // build errors list message.
-        $message = implode(', ', $errors);
+        $message = $this->quoteImplode($errors);
 
         // call parent.
         parent::__construct("({$message})", $code, $previous);

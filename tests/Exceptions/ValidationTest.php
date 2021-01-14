@@ -2,7 +2,12 @@
 
 namespace Tests\Exceptions;
 
-use Meveto\Client\Exceptions;
+use Meveto\Client\Exceptions\Validation\InputDataInvalidException;
+use Meveto\Client\Exceptions\Validation\KeyNotValidException;
+use Meveto\Client\Exceptions\Validation\StateRequiredException;
+use Meveto\Client\Exceptions\Validation\StateTooShortException;
+use Meveto\Client\Exceptions\Validation\ValueNotValidAtException;
+use Meveto\Client\Exceptions\Validation\ValueRequiredAtException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,7 +21,7 @@ class ValidationTest extends TestCase
     public function testValueRequiredAt(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Validation::valueRequiredAt('place', 'foo');
+        $exception = new ValueRequiredAtException('place', 'foo');
 
         // assert message matches (partially).
         static::assertStringContainsString(
@@ -31,7 +36,7 @@ class ValidationTest extends TestCase
     public function testValueNotValidAt(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Validation::valueNotValidAt('place', 'foo', 'bar');
+        $exception = new ValueNotValidAtException('place', 'foo', 'bar');
 
         // assert message matches (partially).
         static::assertStringContainsString(
@@ -46,7 +51,7 @@ class ValidationTest extends TestCase
     public function testKeyNotValid(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Validation::keyNotValid('foo', 'bar');
+        $exception = new KeyNotValidException('foo', 'bar');
 
         // assert message matches (partially).
         static::assertStringContainsString(
@@ -61,7 +66,7 @@ class ValidationTest extends TestCase
     public function testInputDataInvalid(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Validation::inputDataInvalid([ 'a', 'b']);
+        $exception = New InputDataInvalidException([ 'a', 'b']);
 
         // assert message matches (partially).
         static::assertStringContainsString(
@@ -76,7 +81,7 @@ class ValidationTest extends TestCase
     public function testStateRequired(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Validation::stateRequired();
+        $exception = new StateRequiredException();
 
         // assert message matches (partially).
         static::assertStringContainsString(
@@ -91,7 +96,7 @@ class ValidationTest extends TestCase
     public function testStateTooShort(): void
     {
         // create the exception instance.
-        $exception = Exceptions\Validation::stateTooShort(42);
+        $exception = new StateTooShortException(42);
 
         // assert message matches (partially).
         static::assertStringContainsString(

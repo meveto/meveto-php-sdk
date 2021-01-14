@@ -2,7 +2,8 @@
 
 namespace Tests\Exceptions;
 
-use Meveto\Client\Exceptions;
+use Meveto\Client\Exceptions\InvalidClient\ClientErrorException;
+use Meveto\Client\Exceptions\InvalidClient\ClientNotFoundException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,7 +17,7 @@ class InvalidClientTest extends TestCase
     public function testClientNotFound(): void
     {
         // create the exception instance.
-        $exception = Exceptions\InvalidClient::clientNotFound();
+        $exception = new ClientNotFoundException();
 
         // assert message matches (partially).
         static::assertStringContainsString('client credentials are incorrect', $exception->getMessage());
@@ -28,7 +29,7 @@ class InvalidClientTest extends TestCase
     public function testClientError(): void
     {
         // create the exception instance.
-        $exception = Exceptions\InvalidClient::clientError('some-custom-error');
+        $exception = new ClientErrorException('some-custom-error');
 
         // assert message matches (partially).
         static::assertStringContainsString('following error', $exception->getMessage());

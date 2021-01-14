@@ -79,4 +79,19 @@ abstract class MevetoException extends Exception
         // return code to complete.
         return $code;
     }
+
+    /**
+     * Quote implode a list of values.
+     * @param array $values
+     *
+     * @return string
+     */
+    protected function quoteImplode(array $values): string
+    {
+        $quoted = array_map(static function ($value) {
+            return "`${value}`";
+        }, $values);
+
+        return implode(', ', $quoted);
+    }
 }

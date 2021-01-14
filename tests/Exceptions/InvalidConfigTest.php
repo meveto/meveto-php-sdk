@@ -2,7 +2,9 @@
 
 namespace Tests\Exceptions;
 
-use Meveto\Client\Exceptions;
+use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
+use Meveto\Client\Exceptions\InvalidConfig\ConfigNotSetException;
+use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -16,7 +18,7 @@ class InvalidConfigTest extends TestCase
     public function testConfigNotSet(): void
     {
         // create the exception instance.
-        $exception = Exceptions\InvalidConfig::configNotSet();
+        $exception = new ConfigNotSetException();
 
         // assert message matches (partially).
         static::assertStringContainsString('client configuration is not set.', $exception->getMessage());
@@ -28,7 +30,7 @@ class InvalidConfigTest extends TestCase
     public function testArchitectureNotSupported(): void
     {
         // create the exception instance.
-        $exception = Exceptions\InvalidConfig::architectureNotSupported('arm', ['amd64', 'x86']);
+        $exception = new ArchitectureNotSupportedException('arm', ['amd64', 'x86']);
 
         // assert message matches (partially).
         static::assertStringContainsString(
@@ -47,7 +49,7 @@ class InvalidConfigTest extends TestCase
     public function testStateNotSet(): void
     {
         // create the exception instance.
-        $exception = Exceptions\InvalidConfig::stateNotSet();
+        $exception = new StateNotSetException();
 
         // assert message matches (partially).
         static::assertStringContainsString(
