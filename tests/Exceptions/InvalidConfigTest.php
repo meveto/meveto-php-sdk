@@ -5,12 +5,12 @@ namespace Tests\Exceptions;
 use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
 use Meveto\Client\Exceptions\InvalidConfig\ConfigNotSetException;
 use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
-use PHPUnit\Framework\TestCase;
+use Tests\MevetoTestCase;
 
 /**
  * Class InvalidConfigTest.
  */
-class InvalidConfigTest extends TestCase
+class InvalidConfigTest extends MevetoTestCase
 {
     /**
      * Test ConfigNotSetException.
@@ -38,7 +38,7 @@ class InvalidConfigTest extends TestCase
             $exception->getMessage()
         );
         static::assertStringContainsString(
-            'supported architectures include: `amd64`, `x86`.',
+            'At the moment, supported architectures include: `amd64`, `x86`.',
             $exception->getMessage()
         );
     }

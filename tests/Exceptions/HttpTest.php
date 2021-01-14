@@ -4,12 +4,12 @@ namespace Tests\Exceptions;
 
 use Meveto\Client\Exceptions\Http\NotAuthenticatedException;
 use Meveto\Client\Exceptions\Http\NotAuthorizedException;
-use PHPUnit\Framework\TestCase;
+use Tests\MevetoTestCase;
 
 /**
  * Class HttpTest.
  */
-class HttpTest extends TestCase
+class HttpTest extends MevetoTestCase
 {
     /**
      * Test NotAuthorizedException.

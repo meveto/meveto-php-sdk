@@ -29,6 +29,11 @@ abstract class MevetoException extends Exception
     protected $messageSeparator = ' ';
 
     /**
+     * @var string What string use between entries when quote imploding.
+     */
+    protected $quoteImplodeSeparator = ', ';
+
+    /**
      * NotAuthorizedException constructor.
      *
      * @param string|null $message
@@ -45,17 +50,16 @@ abstract class MevetoException extends Exception
      * Build exception message.
      *
      * @param string|null $additionalMessage
-     * @param string $separator
      *
      * @return string
      */
-    protected function buildMessage($additionalMessage = '', $separator = ' '): string
+    protected function buildMessage($additionalMessage = ''): string
     {
         // if empty string, use null.
         $message = empty($additionalMessage) ? null : $additionalMessage;
 
         // merge default messages and custom one.
-        $lines = array_merge($this->defaultMessageLines, [ $message ]);
+        $lines = array_filter(array_merge($this->defaultMessageLines, [ $message ]));
 
         // implode message lines.
         return implode($this->messageSeparator, $lines);
@@ -89,10 +93,26 @@ abstract class MevetoException extends Exception
      */
     protected function quoteImplode(array $values): string
     {
-        $quoted = array_map(static function ($value) {
-            return "`${value}`";
-        }, $values);
+        // mapper function.
+        $mapper = function ($value) {
+            return $this->quoteMessage($value);
+        };
+        // quote merge
+        $quoted = array_map($mapper, $values);
 
-        return implode(', ', $quoted);
+        // return imploded message.
+        return implode($this->quoteImplodeSeparator, $quoted);
+    }
+
+    /**
+     * Quote a given message.
+     *
+     * @param string $message
+     *
+     * @return string
+     */
+    protected function quoteMessage(string $message): string
+    {
+        return "`{$message}`";
     }
 }

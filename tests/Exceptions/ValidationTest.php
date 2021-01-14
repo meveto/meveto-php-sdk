@@ -8,12 +8,12 @@ use Meveto\Client\Exceptions\Validation\StateRequiredException;
 use Meveto\Client\Exceptions\Validation\StateTooShortException;
 use Meveto\Client\Exceptions\Validation\ValueNotValidAtException;
 use Meveto\Client\Exceptions\Validation\ValueRequiredAtException;
-use PHPUnit\Framework\TestCase;
+use Tests\MevetoTestCase;
 
 /**
  * Class ValidationTest.
  */
-class ValidationTest extends TestCase
+class ValidationTest extends MevetoTestCase
 {
     /**
      * Test ValueRequiredAtException.
@@ -66,7 +66,7 @@ class ValidationTest extends TestCase
     public function testInputDataInvalid(): void
     {
         // create the exception instance.
-        $exception = new InputDataInvalidException([ 'a', 'b']);
+        $exception = new InputDataInvalidException(['a', 'b']);
 
         // assert message matches (partially).
         static::assertStringContainsString(
