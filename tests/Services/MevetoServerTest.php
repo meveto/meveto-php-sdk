@@ -483,6 +483,27 @@ class MevetoServerTest extends MevetoTestCase
                 $e->getMessage()
             );
         }
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('get')
+            ->willReturn(new Response(200, [], '{ "error": "any", "error_description": "Custom Error Message Foo" }'));
+
+        try {
+            // call token method.
+            $response = $server->resourceOwnerData($token);
+        } catch (ClientErrorException $e) {
+            static::assertStringContainsString(
+                'Custom Error Message Foo',
+                $e->getMessage()
+            );
+        }
     }
 
     /**
