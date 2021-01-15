@@ -3,6 +3,9 @@
 namespace Tests\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
+use Meveto\Client\Exceptions\InvalidClient\ClientErrorException;
+use Meveto\Client\Exceptions\InvalidClient\ClientNotFoundException;
 use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
 use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
 use Meveto\Client\Exceptions\Validation\KeyNotValidException;
@@ -286,6 +289,151 @@ class MevetoServerTest extends MevetoTestCase
         static::assertStringContainsString('client_token=foo', $authQuery);
         static::assertStringContainsString('sharing_token=bar', $authQuery);
         static::assertStringContainsString("state={$state}", $authQuery);
+    }
+
+    /**
+     * Test accessToken method (valid settings).
+     *
+     * @throws
+     */
+    public function testAccessTokenMethod()
+    {
+        $tokenEndpoint = 'https://prod.meveto.com/oauth/token/foo/bar';
+        $authCode = 'foo-bar-baz';
+
+        $config = [
+            'tokenEndpoint' => $tokenEndpoint,
+            'id' => 'foo',
+            'secret' => 'bar',
+            'redirect_url' => 'https://foo.bar.com/back'
+        ];
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('post')
+            ->with($tokenEndpoint, [
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => $config['id'],
+                    'client_secret' => $config['secret'],
+                    'redirect_uri' => $config['redirect_url'],
+                    'code' => $authCode,
+                ]
+            ])
+            ->willReturn(new Response(200, [], '{ "access_token": "foo-access-token" }'));
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // set config on server.
+        $server->config($config);
+
+        // call access code method.
+        $accessToken = $server->accessToken($authCode);
+
+        // assert it returns the response body.
+        static::assertEquals([ 'access_token' => 'foo-access-token' ], $accessToken);
+    }
+
+    /**
+     * Test accessToken method (valid settings but with error).
+     *
+     * @throws
+     */
+    public function testAccessTokenMethodWithError()
+    {
+        $tokenEndpoint = 'https://prod.meveto.com/oauth/token/foo/bar';
+        $authCode = 'foo-bar-baz';
+
+        $config = [
+            'tokenEndpoint' => $tokenEndpoint,
+            'id' => 'foo',
+            'secret' => 'bar',
+            'redirect_url' => 'https://foo.bar.com/back'
+        ];
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('post')
+            ->with($tokenEndpoint, [
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => $config['id'],
+                    'client_secret' => $config['secret'],
+                    'redirect_uri' => $config['redirect_url'],
+                    'code' => $authCode,
+                ]
+            ])
+            ->willReturn(new Response(200, [], '{ "error": "invalid_client" }'));
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // set config on server.
+        $server->config($config);
+
+        try {
+            // call access code method.
+            $accessToken = $server->accessToken($authCode);
+        } catch (ClientNotFoundException $e) {
+            // assert proper message.
+            static::assertStringContainsString('Your Meveto client credentials are incorrect.', $e->getMessage());
+        }
+    }
+
+    /**
+     * Test accessToken method (valid settings but custom error message).
+     *
+     * @throws
+     */
+    public function testAccessTokenMethodWithCustomError()
+    {
+        $tokenEndpoint = 'https://prod.meveto.com/oauth/token/foo/bar';
+        $authCode = 'foo-bar-baz';
+
+        $config = [
+            'tokenEndpoint' => $tokenEndpoint,
+            'id' => 'foo',
+            'secret' => 'bar',
+            'redirect_url' => 'https://foo.bar.com/back'
+        ];
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('post')
+            ->with($tokenEndpoint, [
+                'form_params' => [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => $config['id'],
+                    'client_secret' => $config['secret'],
+                    'redirect_uri' => $config['redirect_url'],
+                    'code' => $authCode,
+                ]
+            ])
+            ->willReturn(new Response(200, [], '{ "error": "any", "error_description": "Custom Error Message Foo" }'));
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // set config on server.
+        $server->config($config);
+
+        try {
+            // call access code method.
+            $accessToken = $server->accessToken($authCode);
+        } catch (ClientErrorException $e) {
+            // assert proper message.
+            static::assertStringContainsString('Custom Error Message Foo', $e->getMessage());
+        }
     }
 
     /**
