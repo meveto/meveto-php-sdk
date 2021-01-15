@@ -380,6 +380,26 @@ class MevetoServerTest extends MevetoTestCase
     }
 
     /**
+     * Test config with emtpy data.
+     *
+     * @throws
+     */
+    public function testConfigWithEmptyData()
+    {
+        // start server instance.
+        $server = new MevetoServer();
+
+        // empty config.
+        $emptyConfig = [];
+
+        // try setting empty config.
+        $configSetResponse = $server->config($emptyConfig);
+
+        // assert returned false.
+        static::assertFalse($configSetResponse);
+    }
+
+    /**
      * Get a protected/private value from a given server instance.
      *
      * @param MevetoServer $server
