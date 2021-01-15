@@ -343,6 +343,43 @@ class MevetoServerTest extends MevetoTestCase
     }
 
     /**
+     * Test config with valid data.
+     *
+     * @throws
+     */
+    public function testConfigWithValidData()
+    {
+        // start server instance.
+        $server = new MevetoServer();
+
+        // generate some valid config.
+        $validConfig = [
+            'id'            => 'client-foo',
+            'secret'        => 'secret-bar',
+            'scope'         => 'some-scope-here',
+            'redirect_url'  => 'https://get.meback.com/callback',
+            'state'         => 'some-app-state-here',
+            'authEndpoint'  => 'https://dashboard.meveto.com/oauth-client/foo/barr',
+            'tokenEndpoint' => 'https://prod.meveto.com/oauth/token/foo/bar',
+        ];
+
+        // try setting config.
+        try {
+            $server->config($validConfig);
+        } catch (\Exception $e) {
+            // should not except anything.
+            // but if it does. throw it.
+            throw $e;
+        }
+
+        // assert proper handling the invalid key.
+        static::assertEquals(
+            $validConfig,
+            $this->getProtectedPropertyValue($server, 'config')
+        );
+    }
+
+    /**
      * Get a protected/private value from a given server instance.
      *
      * @param MevetoServer $server
