@@ -3,7 +3,10 @@
 namespace Tests\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Response;
+use Meveto\Client\Exceptions\Http\NotAuthenticatedException;
+use Meveto\Client\Exceptions\Http\NotAuthorizedException;
 use Meveto\Client\Exceptions\InvalidClient\ClientErrorException;
 use Meveto\Client\Exceptions\InvalidClient\ClientNotFoundException;
 use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
@@ -13,6 +16,8 @@ use Meveto\Client\Exceptions\Validation\StateRequiredException;
 use Meveto\Client\Exceptions\Validation\StateTooShortException;
 use Meveto\Client\Exceptions\Validation\ValueRequiredAtException;
 use Meveto\Client\Services\MevetoServer;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Tests\MevetoTestCase;
 
 /**
@@ -336,6 +341,148 @@ class MevetoServerTest extends MevetoTestCase
 
         // assert it returns the response body.
         static::assertEquals([ 'access_token' => 'foo-access-token' ], $accessToken);
+    }
+
+    /**
+     * Test resourceOwnerData method.
+     *
+     * @throws
+     */
+    public function testResourceOwnerDataMethod(): void
+    {
+        // fake token to test.
+        $token = 'token-foo-token-bar-token-baz';
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // get resource endpoint from internal value.
+        /** @var string $resourceEndpoint */
+        $resourceEndpoint = $this->getProtectedPropertyValue($server, 'resourceEndpoint');
+
+        // get config as well from internal.
+        /** @var array $config */
+        $config = $this->getProtectedPropertyValue($server, 'config');
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('get')
+            ->with($resourceEndpoint, [
+                'query' => [ 'client_id' => $config['id'] ],
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer '.$token
+                ],
+            ])
+            ->willReturn(new Response(200, [], '{ "payload": { "foo": "bar" } }'));
+
+        // call token method.
+        $response = $server->resourceOwnerData($token);
+
+        // assert it returns the response body.
+        static::assertEquals([ 'foo' => 'bar' ], $response);
+    }
+
+    /**
+     * Test resourceOwnerData method with generic error.
+     *
+     * @throws
+     */
+    public function testResourceOwnerDataMethodWithGenericError(): void
+    {
+        // fake token to test.
+        $token = 'token-foo-token-bar-token-baz';
+
+        // create custom mock exception.
+        $mockException = new ClientException(
+            'foo-bar-message',
+            $this->createMock(RequestInterface::class),
+            $this->createMock(ResponseInterface::class)
+        );
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('get')
+            ->willThrowException($mockException);
+
+        try {
+            // call token method.
+            $response = $server->resourceOwnerData($token);
+        } catch (ClientException $e) {
+            static::assertStringContainsString('foo-bar-message', $e->getMessage());
+        }
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('get')
+            ->willReturn(new Response(401, [], '{}'));
+
+        try {
+            // call token method.
+            $response = $server->resourceOwnerData($token);
+        } catch (NotAuthenticatedException $e) {
+            static::assertStringContainsString(
+                'Meveto server could not authenticate your request and responded with a 401 status',
+                $e->getMessage()
+            );
+        }
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('get')
+            ->willReturn(new Response(403, [], '{}'));
+
+        try {
+            // call token method.
+            $response = $server->resourceOwnerData($token);
+        } catch (NotAuthorizedException $e) {
+            static::assertStringContainsString(
+                'is not authorized to',
+                $e->getMessage()
+            );
+        }
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('get')
+            ->willReturn(new Response(200, [], '{}'));
+
+        try {
+            // call token method.
+            $response = $server->resourceOwnerData($token);
+        } catch (ClientErrorException $e) {
+            static::assertStringContainsString(
+                'Meveto authorization server responded with the following error. Empty payload',
+                $e->getMessage()
+            );
+        }
     }
 
     /**
