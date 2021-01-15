@@ -5,8 +5,10 @@ namespace Tests\Services;
 use GuzzleHttp\Client;
 use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
 use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
+use Meveto\Client\Exceptions\Validation\KeyNotValidException;
 use Meveto\Client\Exceptions\Validation\StateRequiredException;
 use Meveto\Client\Exceptions\Validation\StateTooShortException;
+use Meveto\Client\Exceptions\Validation\ValueRequiredAtException;
 use Meveto\Client\Services\MevetoServer;
 use Tests\MevetoTestCase;
 
@@ -245,6 +247,13 @@ class MevetoServerTest extends MevetoTestCase
         static::assertEquals($supported, $server->getSupportedArchitectures());
     }
 
+    /**
+     * Tests processLogin method.
+     *
+     * @throws StateNotSetException
+     * @throws StateRequiredException
+     * @throws StateTooShortException
+     */
     public function testProcessLogin(): void
     {
         // create client mock.
@@ -273,9 +282,64 @@ class MevetoServerTest extends MevetoTestCase
         // do process login to get auth query.
         $authQuery = $server->processLogin($clientToken, $sharingToken);
 
+        // assert all parts are in place.
         static::assertStringContainsString('client_token=foo', $authQuery);
         static::assertStringContainsString('sharing_token=bar', $authQuery);
         static::assertStringContainsString("state={$state}", $authQuery);
+    }
+
+    /**
+     * Test config with invalid key.
+     *
+     * @throws
+     */
+    public function testConfigWithInvalidKey()
+    {
+        // start server instance.
+        $server = new MevetoServer();
+
+        // invalid config.
+        $configWithInvalidKey = [
+            'foo' => 'bar'
+        ];
+
+        // try setting invalid config.
+        try {
+            $server->config($configWithInvalidKey);
+        } catch (KeyNotValidException $e) {
+            // assert proper handling the invalid key.
+            static::assertStringContainsString(
+                'Your `Meveto configuration` array has an unexpected key `foo`.',
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Test config with missing value.
+     *
+     * @throws
+     */
+    public function testConfigWithMissingValue()
+    {
+        // start server instance.
+        $server = new MevetoServer();
+
+        // invalid config.
+        $configWithMissingValue = [
+            'id' => null
+        ];
+
+        // try setting config.
+        try {
+            $server->config($configWithMissingValue);
+        } catch (ValueRequiredAtException $e) {
+            // assert proper handling the invalid key.
+            static::assertStringContainsString(
+                '`id` is required inside `Meveto configuration` array and it can not be empty or null.',
+                $e->getMessage()
+            );
+        }
     }
 
     /**
@@ -289,7 +353,7 @@ class MevetoServerTest extends MevetoTestCase
     protected function getProtectedPropertyValue(MevetoServer $server, string $propertyName)
     {
         try {
-            // reflect to get config..
+            // reflect to get property..
             $reflection = new \ReflectionClass($server);
             $property = $reflection->getProperty($propertyName);
             $property->setAccessible(true);
