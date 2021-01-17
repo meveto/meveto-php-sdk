@@ -15,29 +15,29 @@ class InvalidConfigTest extends MevetoTestCase
     /**
      * Test ConfigNotSetException.
      */
-    public function testConfigNotSet(): void
+    public function testConfigNotSet()
     {
         // create the exception instance.
         $exception = new ConfigNotSetException();
 
         // assert message matches (partially).
-        static::assertStringContainsString('client configuration is not set.', $exception->getMessage());
+        static::assertContains('client configuration is not set.', $exception->getMessage());
     }
 
     /**
      * Test ArchitectureNotSupportedException.
      */
-    public function testArchitectureNotSupported(): void
+    public function testArchitectureNotSupported()
     {
         // create the exception instance.
         $exception = new ArchitectureNotSupportedException('arm', ['amd64', 'x86']);
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             '`arm` is not supported',
             $exception->getMessage()
         );
-        static::assertStringContainsString(
+        static::assertContains(
             'At the moment, supported architectures include: `amd64`, `x86`.',
             $exception->getMessage()
         );
@@ -46,13 +46,13 @@ class InvalidConfigTest extends MevetoTestCase
     /**
      * Test StateNotSetException.
      */
-    public function testStateNotSet(): void
+    public function testStateNotSet()
     {
         // create the exception instance.
         $exception = new StateNotSetException();
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             'Current application request state is not set.',
             $exception->getMessage()
         );

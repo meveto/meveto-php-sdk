@@ -18,13 +18,13 @@ class ValidationTest extends MevetoTestCase
     /**
      * Test ValueRequiredAtException.
      */
-    public function testValueRequiredAt(): void
+    public function testValueRequiredAt()
     {
         // create the exception instance.
         $exception = new ValueRequiredAtException('place', 'foo');
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             '`foo` is required inside `place` array',
             $exception->getMessage()
         );
@@ -33,13 +33,13 @@ class ValidationTest extends MevetoTestCase
     /**
      * Test ValueNotValidAtException.
      */
-    public function testValueNotValidAt(): void
+    public function testValueNotValidAt()
     {
         // create the exception instance.
         $exception = new ValueNotValidAtException('place', 'foo', 'bar');
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             '`foo` has an invalid value inside `place` array. It must be a valid `bar`',
             $exception->getMessage()
         );
@@ -48,13 +48,13 @@ class ValidationTest extends MevetoTestCase
     /**
      * Test KeyNotValidException.
      */
-    public function testKeyNotValid(): void
+    public function testKeyNotValid()
     {
         // create the exception instance.
         $exception = new KeyNotValidException('foo', 'bar');
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             'Your `foo` array has an unexpected key `bar`.',
             $exception->getMessage()
         );
@@ -63,13 +63,13 @@ class ValidationTest extends MevetoTestCase
     /**
      * Test InputDataInvalidException.
      */
-    public function testInputDataInvalid(): void
+    public function testInputDataInvalid()
     {
         // create the exception instance.
         $exception = new InputDataInvalidException(['a', 'b']);
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             'The following errors occurred while processing your request: (`a`, `b`)',
             $exception->getMessage()
         );
@@ -78,13 +78,13 @@ class ValidationTest extends MevetoTestCase
     /**
      * Test StateRequiredException.
      */
-    public function testStateRequired(): void
+    public function testStateRequired()
     {
         // create the exception instance.
         $exception = new StateRequiredException();
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             'Current application request state can not be empty.',
             $exception->getMessage()
         );
@@ -93,13 +93,13 @@ class ValidationTest extends MevetoTestCase
     /**
      * Test StateTooShortException.
      */
-    public function testStateTooShort(): void
+    public function testStateTooShort()
     {
         // create the exception instance.
         $exception = new StateTooShortException(42);
 
         // assert message matches (partially).
-        static::assertStringContainsString(
+        static::assertContains(
             'Current application request state must be at least `42` characters long.',
             $exception->getMessage()
         );

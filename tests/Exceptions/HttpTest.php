@@ -14,31 +14,31 @@ class HttpTest extends MevetoTestCase
     /**
      * Test NotAuthorizedException.
      */
-    public function testNotAuthorizedException(): void
+    public function testNotAuthorizedException()
     {
         // create the exception instance.
         $exception = new NotAuthorizedException();
 
         // assert message matches (partially).
-        static::assertStringContainsString('not authorized', $exception->getMessage());
+        static::assertContains('not authorized', $exception->getMessage());
     }
 
     /**
      * Test NotAuthenticatedException.
      */
-    public function testNotAuthenticatedException(): void
+    public function testNotAuthenticatedException()
     {
         // create the exception instance.
         $exception = new NotAuthenticatedException();
 
         // assert message matches (partially).
-        static::assertStringContainsString('could not authenticate', $exception->getMessage());
+        static::assertContains('could not authenticate', $exception->getMessage());
     }
 
     /**
      * Test NotAuthenticatedException with custom code.
      */
-    public function testCustomCodeNotAuthenticatedException(): void
+    public function testCustomCodeNotAuthenticatedException()
     {
         // create the exception instance.
         $exception = new NotAuthenticatedException('', 999);

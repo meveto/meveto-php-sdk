@@ -14,7 +14,7 @@ class InvalidClientTest extends MevetoTestCase
     /**
      * Test ClientNotFoundException.
      */
-    public function testClientNotFound(): void
+    public function testClientNotFound()
     {
         // create the exception instance.
         $exception = new ClientNotFoundException();
@@ -23,23 +23,23 @@ class InvalidClientTest extends MevetoTestCase
         $message = $exception->getMessage();
 
         // assert message matches (partially).
-        static::assertStringContainsString('Your Meveto client credentials are incorrect.', $message);
-        static::assertStringContainsString('Check your client ID, secret and redirect URL.', $message);
-        static::assertStringContainsString('Check your client ID, secret and redirect URL.', $message);
-        static::assertStringContainsString('Redirect URL must be exactly the same as', $message);
-        static::assertStringContainsString('provided at the time of client registration.', $message);
+        static::assertContains('Your Meveto client credentials are incorrect.', $message);
+        static::assertContains('Check your client ID, secret and redirect URL.', $message);
+        static::assertContains('Check your client ID, secret and redirect URL.', $message);
+        static::assertContains('Redirect URL must be exactly the same as', $message);
+        static::assertContains('provided at the time of client registration.', $message);
     }
 
     /**
      * Test ClientErrorException.
      */
-    public function testClientError(): void
+    public function testClientError()
     {
         // create the exception instance.
         $exception = new ClientErrorException('some-custom-error');
 
         // assert message matches (partially).
-        static::assertStringContainsString('following error', $exception->getMessage());
-        static::assertStringContainsString('some-custom-error', $exception->getMessage());
+        static::assertContains('following error', $exception->getMessage());
+        static::assertContains('some-custom-error', $exception->getMessage());
     }
 }

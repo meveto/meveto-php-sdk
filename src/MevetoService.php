@@ -64,7 +64,7 @@ class MevetoService
      * @return void
      *
      */
-    protected function setArchitecture(string $arch): void
+    protected function setArchitecture(string $arch)
     {
         $this->MevetoServer->architecture($arch);
     }
@@ -80,7 +80,7 @@ class MevetoService
      * @return void
      *
      */
-    protected function setConfig(array $config): void
+    protected function setConfig(array $config)
     {
         $this->isConfigSet = $this->MevetoServer->config($config);
     }
@@ -92,7 +92,7 @@ class MevetoService
      *
      * @return void
      */
-    protected function setResourceEndpoint(string $api_url): void
+    protected function setResourceEndpoint(string $api_url)
     {
         $this->MevetoServer->resourceEndpoint($api_url);
     }
@@ -104,7 +104,7 @@ class MevetoService
      *
      * @return void
      */
-    protected function setAliasEndpoint(string $api_url): void
+    protected function setAliasEndpoint(string $api_url)
     {
         $this->MevetoServer->aliasEndpoint($api_url);
     }
@@ -116,7 +116,7 @@ class MevetoService
      *
      * @return void
      */
-    protected function setUserEndpoint(string $api_url): void
+    protected function setUserEndpoint(string $api_url)
     {
         $this->MevetoServer->eventUserEndpoint($api_url);
     }
@@ -132,7 +132,7 @@ class MevetoService
      * @return void
      *
      */
-    public function setState(string $state): void
+    public function setState(string $state)
     {
         $this->MevetoServer->state($state);
     }
@@ -200,14 +200,14 @@ class MevetoService
      * @param string $token The Meveto access token
      * @param string $user A local (at your app) user identifier that is to be synchronized to a Meveto identifier
      *
-     * @throws GuzzleException
+     * @return bool True if synchronization is successful false otherwise
+     *
      * @throws NotAuthenticatedException
      * @throws NotAuthorizedException
      * @throws ClientErrorException
      * @throws InputDataInvalidException
-     *
-     * @return bool True if synchronization is successful false otherwise
-     *
+     * @throws ConfigNotSetException
+     * @throws GuzzleException
      */
     public function connectToMeveto(string $token, string $user): bool
     {
@@ -239,7 +239,7 @@ class MevetoService
      *
      * @throws ConfigNotSetException
      */
-    protected function validateRequestData(): void
+    protected function validateRequestData()
     {
         if (! $this->isConfigSet) {
             throw new ConfigNotSetException('');

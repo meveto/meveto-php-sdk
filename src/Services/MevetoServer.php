@@ -104,7 +104,7 @@ class MevetoServer
      *
      * @return void
      */
-    public function architecture(string $architecture): void
+    public function architecture(string $architecture)
     {
         if (! in_array($architecture, $this->architectures, true)) {
             throw new ArchitectureNotSupportedException($architecture, $this->architectures);
@@ -158,7 +158,7 @@ class MevetoServer
      * @return void
      *
      */
-    public function state(string $state): void
+    public function state(string $state)
     {
         $state = trim($state);
 
@@ -183,7 +183,7 @@ class MevetoServer
      *
      * @return void
      */
-    public function resourceEndpoint(string $api_url): void
+    public function resourceEndpoint(string $api_url)
     {
         $this->resourceEndpoint = $api_url;
     }
@@ -195,7 +195,7 @@ class MevetoServer
      *
      * @return void
      */
-    public function stateLength(int $stateLength = 128): void
+    public function stateLength(int $stateLength = 128)
     {
         $this->stateLength = $stateLength;
     }
@@ -207,7 +207,7 @@ class MevetoServer
      *
      * @return void
      */
-    public function aliasEndpoint(string $api_url): void
+    public function aliasEndpoint(string $api_url)
     {
         $this->aliasEndpoint = $api_url;
     }
@@ -219,7 +219,7 @@ class MevetoServer
      *
      * @return void
      */
-    public function eventUserEndpoint(string $api_url): void
+    public function eventUserEndpoint(string $api_url)
     {
         $this->eventUserEndpoint = $api_url;
     }
@@ -275,7 +275,7 @@ class MevetoServer
      */
     public function accessToken(string $authCode): array
     {
-        $response = $this->http->post($this->config['tokenEndpoint'], [
+        $response = $this->http->request('POST', $this->config['tokenEndpoint'], [
             'form_params' => [
                 'grant_type' => 'authorization_code',
                 'client_id' => $this->config['id'],
@@ -315,7 +315,7 @@ class MevetoServer
     public function resourceOwnerData(string $token): array
     {
         try {
-            $response = $this->http->get($this->resourceEndpoint, [
+            $response = $this->http->request('GET', $this->resourceEndpoint, [
                 'query' => [
                     'client_id' => $this->config['id'],
                 ],
@@ -364,7 +364,7 @@ class MevetoServer
      */
     public function synchronizeUserID(string $token, string $user): bool
     {
-        $response = $this->http->post($this->aliasEndpoint, [
+        $response = $this->http->request('POST', $this->aliasEndpoint, [
             'form_params' => [
                 'client_id' => $this->config['id'],
                 'alias_name' => $user,
@@ -413,7 +413,7 @@ class MevetoServer
     public function tokenUser(string $userToken): string
     {
         try {
-            $response = $this->http->get($this->eventUserEndpoint, [
+            $response = $this->http->request('GET', $this->eventUserEndpoint, [
                 'query' => [
                     'token' => $userToken,
                 ],
@@ -449,7 +449,7 @@ class MevetoServer
      *
      * @return Client
      */
-    public function http(Client $client = null): ?Client
+    public function http(Client $client = null): Client
     {
         // if a instance was passed, set it.
         if ($client) {
@@ -468,5 +468,41 @@ class MevetoServer
     public function getSupportedArchitectures(): array
     {
         return $this->architectures;
+    }
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     *
+     * @throws GuzzleException
+     * @throws NotAuthenticatedException
+     * @throws NotAuthorizedException
+     * @throws ClientErrorException
+     *
+     * @returns array
+     */
+    protected function makeHttpCall(string $method, string $uri, array $options = [])
+    {
+        try {
+            $response = $this->http->request($method, $uri, $options);
+        } catch (ClientException $e) {
+            throw $e;
+        }
+
+        if ($response->getStatusCode() === 401) {
+            throw new NotAuthenticatedException('');
+        }
+        if ($response->getStatusCode() === 403) {
+            throw new NotAuthorizedException('');
+        }
+
+        $content = json_decode((string) $response->getBody(), true);
+
+        if (isset($content['error'])) {
+            throw new ClientErrorException($content['error_description']);
+        }
+
+        return $content;
     }
 }
