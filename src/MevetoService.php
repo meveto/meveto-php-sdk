@@ -33,15 +33,16 @@ class MevetoService
     /**
      * @param array $config The Meveto configuration array
      * @param string $architecture The architecture of your application. It is set to web by default
+     * @param MevetoServer|null $mevetoServer Instance for meveto server, if any.
      *
      * @throws ArchitectureNotSupportedException
      * @throws KeyNotValidException
      * @throws ValueRequiredAtException
      */
-    public function __construct(array $config, string $architecture = 'web')
+    public function __construct(array $config, string $architecture = 'web', $mevetoServer = null)
     {
         // start server instance.
-        $this->MevetoServer = new MevetoServer();
+        $this->MevetoServer = $mevetoServer ?: new MevetoServer();
 
         // set arch.
         $this->setArchitecture($architecture);
@@ -223,7 +224,7 @@ class MevetoService
      * @param string $userToken The user token your application's webhook received from Meveto
      *
      * @throws GuzzleException
-     * @throws ClientErrorException
+     * @throws ClientErrorException|ConfigNotSetException
      *
      * @return string The user identifier
      *
