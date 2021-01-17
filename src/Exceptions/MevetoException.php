@@ -40,7 +40,7 @@ abstract class MevetoException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct($message = '', $code = 0, Throwable $previous = null)
+    public function __construct($message = null, $code = 0, Throwable $previous = null)
     {
         // call parent constructor.
         parent::__construct($this->buildMessage($message), $this->buildCode($code), $previous);

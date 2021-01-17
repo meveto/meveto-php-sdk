@@ -349,6 +349,159 @@ class MevetoServerTest extends MevetoTestCase
     }
 
     /**
+     * Test token user method (valid settings).
+     *
+     * @throws
+     */
+    public function testTokenUserMethod()
+    {
+        // endpoint URL.
+        $eventUserEndpoint = 'https://prod.meveto.com/api/client/user-for-token/custom-foo-bar';
+        // user token.
+        $userToken = 'foo-bar-baz';
+
+        // generate http mock.
+        $mockHttp = function ($return) use ($eventUserEndpoint, $userToken) {
+            // start mock http client.
+            $http = $this->createMock(Client::class);
+            // configure mock http client.
+            $http->expects(static::once())
+                ->method('request')
+                ->with(
+                    'GET',
+                    $eventUserEndpoint,
+                    [
+                        'query' => [ 'token' => $userToken ],
+                        'headers' => [ 'Accept' => 'application/json' ],
+                    ]
+                )
+                ->willReturn($return);
+
+            // return mock http.
+            return $http;
+        };
+
+        // create a mock http.
+        $http = $mockHttp(new Response(200, [], '{ "status": "Invalid_User_Token", "message": "token is invalid ok?" }'));
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+        // set config on server.
+        $server->eventUserEndpoint($eventUserEndpoint);
+
+        // call access code method.
+        try {
+            $server->tokenUser($userToken);
+        } catch (ClientErrorException $e) {
+            static::assertStringHasString('token is invalid ok?', $e->getMessage());
+        }
+
+        // create a mock http.
+        $http = $mockHttp(new Response(200, [], '{ "status": "NOT-Token_User_Retrieved" }'));
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+        // set config on server.
+        $server->eventUserEndpoint($eventUserEndpoint);
+
+        // call access code method.
+        try {
+            $server->tokenUser($userToken);
+        } catch (ClientErrorException $e) {
+            static::assertStringHasString('Error retrieving token.', $e->getMessage());
+        }
+
+        // create a mock http.
+        $http = $mockHttp(new Response(200, [], '{ "status": "Token_User_Retrieved" }'));
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+        // set config on server.
+        $server->eventUserEndpoint($eventUserEndpoint);
+
+        // call access code method.
+        try {
+            $server->tokenUser($userToken);
+        } catch (ClientErrorException $e) {
+            static::assertStringHasString('Invalid payload.', $e->getMessage());
+        }
+
+        // create a mock http.
+        $http = $mockHttp(new Response(200, [], '{ "status": "Token_User_Retrieved", "payload": { "user": "foo-bar" } }'));
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+        // set config on server.
+        $server->eventUserEndpoint($eventUserEndpoint);
+
+        // get payload.
+        $payload = $server->tokenUser($userToken);
+        // assert is the expected.
+        static::assertStringHasString('foo-bar', $payload);
+    }
+
+    /**
+     * Test token user method (valid settings).
+     *
+     * @throws
+     */
+    public function testSyncUserIdMethod()
+    {
+        // endpoint.
+        $endpoint = 'https://prod.meveto.com/api/fake-alias-endpoint';
+        // token.
+        $token = 'foo-bar-baz';
+        // user.
+        $user = 'john-doe';
+
+        // config.
+        $config = [
+            'id' => 'foo-bar-baz'
+        ];
+
+        // generate http mock.
+        $mockHttp = function ($return) use ($endpoint, $token, $user, $config) {
+            // start mock http client.
+            $http = $this->createMock(Client::class);
+            // configure mock http client.
+            $http->expects(static::once())
+                ->method('request')
+                ->with(
+                    'POST',
+                    $endpoint,
+                    [
+                        'form_params' => [ 'client_id' => $config['id'], 'alias_name' => $user ],
+                        'headers' => [ 'Accept' => 'application/json', 'Authorization' => 'Bearer '.$token ],
+                    ]
+                )
+                ->willReturn($return);
+
+            // return mock http.
+            return $http;
+        };
+
+        // create a mock http.
+        $http = $mockHttp(new Response(200, [], '{ "status": "NOT-Alias_Added_Successfully" }'));
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+        // set server config.
+        $server->config($config);
+        // set endpoint.
+        $server->aliasEndpoint($endpoint);
+
+        // assert false.
+        static::assertFalse($server->synchronizeUserID($token, $user));
+
+        // create a mock http.
+        $http = $mockHttp(new Response(200, [], '{ "status": "Alias_Added_Successfully" }'));
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+        // set server config.
+        $server->config($config);
+        // set endpoint.
+        $server->aliasEndpoint($endpoint);
+
+        // assert false.
+        static::assertTrue($server->synchronizeUserID($token, $user));
+    }
+
+    /**
      * Test resourceOwnerData method.
      *
      * @throws

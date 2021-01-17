@@ -376,14 +376,22 @@ class MevetoServer
             ],
         ]);
 
-        if ($content['status'] !== 'Token_User_Retrieved') {
-            throw new ClientErrorException('Error retrieving token.');
-        }
-
-        if ($content['status'] === 'Invalid_User_Token') {
+        // check for invalid token first.
+        if (isset($content['status']) && $content['status'] === 'Invalid_User_Token') {
             throw new ClientErrorException($content['message']);
         }
 
+        // display generic if status is not the expected.
+        if (isset($content['status']) && $content['status'] !== 'Token_User_Retrieved') {
+            throw new ClientErrorException('Error retrieving token.');
+        }
+
+        // display generic if status is not the expected.
+        if (!isset($content['payload']['user'])) {
+            throw new ClientErrorException('Invalid payload.');
+        }
+
+        // return payload.
         return $content['payload']['user'];
     }
 
