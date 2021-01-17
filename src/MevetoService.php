@@ -200,14 +200,15 @@ class MevetoService
      * @param string $token The Meveto access token
      * @param string $user A local (at your app) user identifier that is to be synchronized to a Meveto identifier
      *
-     * @return bool True if synchronization is successful false otherwise
-     *
      * @throws NotAuthenticatedException
      * @throws NotAuthorizedException
      * @throws ClientErrorException
      * @throws InputDataInvalidException
      * @throws ConfigNotSetException
      * @throws GuzzleException
+     *
+     * @return bool True if synchronization is successful false otherwise
+     *
      */
     public function connectToMeveto(string $token, string $user): bool
     {

@@ -311,7 +311,7 @@ class MevetoServerTest extends MevetoTestCase
             'tokenEndpoint' => $tokenEndpoint,
             'id' => 'foo',
             'secret' => 'bar',
-            'redirect_url' => 'https://foo.bar.com/back'
+            'redirect_url' => 'https://foo.bar.com/back',
         ];
 
         // start mock http client.
@@ -320,15 +320,19 @@ class MevetoServerTest extends MevetoTestCase
         // configure mock http client.
         $http->expects(static::once())
             ->method('request')
-            ->with('POST', $tokenEndpoint, [
-                'form_params' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id' => $config['id'],
-                    'client_secret' => $config['secret'],
-                    'redirect_uri' => $config['redirect_url'],
-                    'code' => $authCode,
+            ->with(
+                'POST',
+                $tokenEndpoint,
+                [
+                    'form_params' => [
+                        'grant_type' => 'authorization_code',
+                        'client_id' => $config['id'],
+                        'client_secret' => $config['secret'],
+                        'redirect_uri' => $config['redirect_url'],
+                        'code' => $authCode,
+                    ],
                 ]
-            ])
+            )
             ->willReturn(new Response(200, [], '{ "access_token": "foo-access-token" }'));
 
         // start server instance with custom http.
@@ -341,7 +345,7 @@ class MevetoServerTest extends MevetoTestCase
         $accessToken = $server->accessToken($authCode);
 
         // assert it returns the response body.
-        static::assertEquals([ 'access_token' => 'foo-access-token' ], $accessToken);
+        static::assertEquals(['access_token' => 'foo-access-token'], $accessToken);
     }
 
     /**
@@ -371,20 +375,24 @@ class MevetoServerTest extends MevetoTestCase
         // configure mock http client.
         $http->expects(static::once())
             ->method('request')
-            ->with('GET', $resourceEndpoint, [
-                'query' => [ 'client_id' => $config['id'] ],
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'Authorization' => 'Bearer '.$token
-                ],
-            ])
+            ->with(
+                'GET',
+                $resourceEndpoint,
+                [
+                    'query' => ['client_id' => $config['id']],
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => 'Bearer ' . $token,
+                    ],
+                ]
+            )
             ->willReturn(new Response(200, [], '{ "payload": { "foo": "bar" } }'));
 
         // call token method.
         $response = $server->resourceOwnerData($token);
 
         // assert it returns the response body.
-        static::assertEquals([ 'foo' => 'bar' ], $response);
+        static::assertEquals(['foo' => 'bar'], $response);
     }
 
     /**
@@ -521,7 +529,7 @@ class MevetoServerTest extends MevetoTestCase
             'tokenEndpoint' => $tokenEndpoint,
             'id' => 'foo',
             'secret' => 'bar',
-            'redirect_url' => 'https://foo.bar.com/back'
+            'redirect_url' => 'https://foo.bar.com/back',
         ];
 
         // start mock http client.
@@ -530,15 +538,19 @@ class MevetoServerTest extends MevetoTestCase
         // configure mock http client.
         $http->expects(static::once())
             ->method('request')
-            ->with('POST', $tokenEndpoint, [
-                'form_params' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id' => $config['id'],
-                    'client_secret' => $config['secret'],
-                    'redirect_uri' => $config['redirect_url'],
-                    'code' => $authCode,
+            ->with(
+                'POST',
+                $tokenEndpoint,
+                [
+                    'form_params' => [
+                        'grant_type' => 'authorization_code',
+                        'client_id' => $config['id'],
+                        'client_secret' => $config['secret'],
+                        'redirect_uri' => $config['redirect_url'],
+                        'code' => $authCode,
+                    ],
                 ]
-            ])
+            )
             ->willReturn(new Response(200, [], '{ "error": "invalid_client" }'));
 
         // start server instance with custom http.
@@ -570,7 +582,7 @@ class MevetoServerTest extends MevetoTestCase
             'tokenEndpoint' => $tokenEndpoint,
             'id' => 'foo',
             'secret' => 'bar',
-            'redirect_url' => 'https://foo.bar.com/back'
+            'redirect_url' => 'https://foo.bar.com/back',
         ];
 
         // start mock http client.
@@ -579,15 +591,19 @@ class MevetoServerTest extends MevetoTestCase
         // configure mock http client.
         $http->expects(static::once())
             ->method('request')
-            ->with('POST', $tokenEndpoint, [
-                'form_params' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id' => $config['id'],
-                    'client_secret' => $config['secret'],
-                    'redirect_uri' => $config['redirect_url'],
-                    'code' => $authCode,
+            ->with(
+                'POST',
+                $tokenEndpoint,
+                [
+                    'form_params' => [
+                        'grant_type' => 'authorization_code',
+                        'client_id' => $config['id'],
+                        'client_secret' => $config['secret'],
+                        'redirect_uri' => $config['redirect_url'],
+                        'code' => $authCode,
+                    ],
                 ]
-            ])
+            )
             ->willReturn(new Response(200, [], '{ "error": "any", "error_description": "Custom Error Message Foo" }'));
 
         // start server instance with custom http.
@@ -619,7 +635,7 @@ class MevetoServerTest extends MevetoTestCase
             'tokenEndpoint' => $tokenEndpoint,
             'id' => 'foo',
             'secret' => 'bar',
-            'redirect_url' => 'https://foo.bar.com/back'
+            'redirect_url' => 'https://foo.bar.com/back',
         ];
 
         // start mock http client.
@@ -701,7 +717,7 @@ class MevetoServerTest extends MevetoTestCase
 
         // invalid config.
         $configWithInvalidKey = [
-            'foo' => 'bar'
+            'foo' => 'bar',
         ];
 
         // try setting invalid config.
@@ -728,7 +744,7 @@ class MevetoServerTest extends MevetoTestCase
 
         // invalid config.
         $configWithMissingValue = [
-            'id' => null
+            'id' => null,
         ];
 
         // try setting config.
@@ -755,12 +771,12 @@ class MevetoServerTest extends MevetoTestCase
 
         // generate some valid config.
         $validConfig = [
-            'id'            => 'client-foo',
-            'secret'        => 'secret-bar',
-            'scope'         => 'some-scope-here',
-            'redirect_url'  => 'https://get.meback.com/callback',
-            'state'         => 'some-app-state-here',
-            'authEndpoint'  => 'https://dashboard.meveto.com/oauth-client/foo/barr',
+            'id' => 'client-foo',
+            'secret' => 'secret-bar',
+            'scope' => 'some-scope-here',
+            'redirect_url' => 'https://get.meback.com/callback',
+            'state' => 'some-app-state-here',
+            'authEndpoint' => 'https://dashboard.meveto.com/oauth-client/foo/barr',
             'tokenEndpoint' => 'https://prod.meveto.com/oauth/token/foo/bar',
         ];
 
@@ -830,6 +846,7 @@ class MevetoServerTest extends MevetoTestCase
      * @throws
      *
      * @return string|null
+     *
      *
      */
     protected function generateRandomState($length = 128): string
