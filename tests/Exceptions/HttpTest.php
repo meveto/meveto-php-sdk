@@ -20,7 +20,7 @@ class HttpTest extends MevetoTestCase
         $exception = new NotAuthorizedException();
 
         // assert message matches (partially).
-        static::assertContains('not authorized', $exception->getMessage());
+        static::assertStringHasString('not authorized', $exception->getMessage());
     }
 
     /**
@@ -32,7 +32,7 @@ class HttpTest extends MevetoTestCase
         $exception = new NotAuthenticatedException();
 
         // assert message matches (partially).
-        static::assertContains('could not authenticate', $exception->getMessage());
+        static::assertStringHasString('could not authenticate', $exception->getMessage());
     }
 
     /**

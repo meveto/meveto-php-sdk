@@ -21,7 +21,7 @@ class InvalidConfigTest extends MevetoTestCase
         $exception = new ConfigNotSetException();
 
         // assert message matches (partially).
-        static::assertContains('client configuration is not set.', $exception->getMessage());
+        static::assertStringHasString('client configuration is not set.', $exception->getMessage());
     }
 
     /**
@@ -33,11 +33,11 @@ class InvalidConfigTest extends MevetoTestCase
         $exception = new ArchitectureNotSupportedException('arm', ['amd64', 'x86']);
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             '`arm` is not supported',
             $exception->getMessage()
         );
-        static::assertContains(
+        static::assertStringHasString(
             'At the moment, supported architectures include: `amd64`, `x86`.',
             $exception->getMessage()
         );
@@ -52,7 +52,7 @@ class InvalidConfigTest extends MevetoTestCase
         $exception = new StateNotSetException();
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             'Current application request state is not set.',
             $exception->getMessage()
         );

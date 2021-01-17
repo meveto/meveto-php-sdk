@@ -49,7 +49,7 @@ class MevetoServerTest extends MevetoTestCase
         try {
             $server->state('foo');
         } catch (\Exception $e) {
-            static::assertContains("at least `{$customLength}` characters long.", $e->getMessage());
+            static::assertStringHasString("at least `{$customLength}` characters long.", $e->getMessage());
         }
     }
 
@@ -224,7 +224,7 @@ class MevetoServerTest extends MevetoTestCase
             $server->architecture($architecture);
         } catch (\Exception $e) {
             // assert unsupported is properly rejected.
-            static::assertContains("`{$architecture}` is not supported", $e->getMessage());
+            static::assertStringHasString("`{$architecture}` is not supported", $e->getMessage());
             // assert error instance.
             static::assertInstanceOf(ArchitectureNotSupportedException::class, $e);
         }
@@ -291,9 +291,9 @@ class MevetoServerTest extends MevetoTestCase
         $authQuery = $server->processLogin($clientToken, $sharingToken);
 
         // assert all parts are in place.
-        static::assertContains('client_token=foo', $authQuery);
-        static::assertContains('sharing_token=bar', $authQuery);
-        static::assertContains("state={$state}", $authQuery);
+        static::assertStringHasString('client_token=foo', $authQuery);
+        static::assertStringHasString('sharing_token=bar', $authQuery);
+        static::assertStringHasString("state={$state}", $authQuery);
     }
 
     /**
@@ -418,7 +418,7 @@ class MevetoServerTest extends MevetoTestCase
             // call token method.
             $response = $server->resourceOwnerData($token);
         } catch (ClientException $e) {
-            static::assertContains('foo-bar-message', $e->getMessage());
+            static::assertStringHasString('foo-bar-message', $e->getMessage());
         }
 
         // start mock http client.
@@ -436,7 +436,7 @@ class MevetoServerTest extends MevetoTestCase
             // call token method.
             $response = $server->resourceOwnerData($token);
         } catch (NotAuthenticatedException $e) {
-            static::assertContains(
+            static::assertStringHasString(
                 'Meveto server could not authenticate your request and responded with a 401 status',
                 $e->getMessage()
             );
@@ -457,7 +457,7 @@ class MevetoServerTest extends MevetoTestCase
             // call token method.
             $response = $server->resourceOwnerData($token);
         } catch (NotAuthorizedException $e) {
-            self::assertContains(
+            self::assertStringHasString(
                 'is not authorized to',
                 $e->getMessage()
             );
@@ -478,7 +478,7 @@ class MevetoServerTest extends MevetoTestCase
             // call token method.
             $response = $server->resourceOwnerData($token);
         } catch (ClientErrorException $e) {
-            static::assertContains(
+            static::assertStringHasString(
                 'Meveto authorization server responded with the following error. Empty payload',
                 $e->getMessage()
             );
@@ -499,7 +499,7 @@ class MevetoServerTest extends MevetoTestCase
             // call token method.
             $response = $server->resourceOwnerData($token);
         } catch (ClientErrorException $e) {
-            static::assertContains(
+            static::assertStringHasString(
                 'Custom Error Message Foo',
                 $e->getMessage()
             );
@@ -551,7 +551,7 @@ class MevetoServerTest extends MevetoTestCase
             $accessToken = $server->accessToken($authCode);
         } catch (ClientNotFoundException $e) {
             // assert proper message.
-            static::assertContains('Your Meveto client credentials are incorrect.', $e->getMessage());
+            static::assertStringHasString('Your Meveto client credentials are incorrect.', $e->getMessage());
         }
     }
 
@@ -600,7 +600,7 @@ class MevetoServerTest extends MevetoTestCase
             $accessToken = $server->accessToken($authCode);
         } catch (ClientErrorException $e) {
             // assert proper message.
-            static::assertContains('Custom Error Message Foo', $e->getMessage());
+            static::assertStringHasString('Custom Error Message Foo', $e->getMessage());
         }
     }
 
@@ -624,7 +624,7 @@ class MevetoServerTest extends MevetoTestCase
             $server->config($configWithInvalidKey);
         } catch (KeyNotValidException $e) {
             // assert proper handling the invalid key.
-            static::assertContains(
+            static::assertStringHasString(
                 'Your `Meveto configuration` array has an unexpected key `foo`.',
                 $e->getMessage()
             );
@@ -651,7 +651,7 @@ class MevetoServerTest extends MevetoTestCase
             $server->config($configWithMissingValue);
         } catch (ValueRequiredAtException $e) {
             // assert proper handling the invalid key.
-            static::assertContains(
+            static::assertStringHasString(
                 '`id` is required inside `Meveto configuration` array and it can not be empty or null.',
                 $e->getMessage()
             );

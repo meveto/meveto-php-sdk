@@ -24,7 +24,7 @@ class ValidationTest extends MevetoTestCase
         $exception = new ValueRequiredAtException('place', 'foo');
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             '`foo` is required inside `place` array',
             $exception->getMessage()
         );
@@ -39,7 +39,7 @@ class ValidationTest extends MevetoTestCase
         $exception = new ValueNotValidAtException('place', 'foo', 'bar');
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             '`foo` has an invalid value inside `place` array. It must be a valid `bar`',
             $exception->getMessage()
         );
@@ -54,7 +54,7 @@ class ValidationTest extends MevetoTestCase
         $exception = new KeyNotValidException('foo', 'bar');
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             'Your `foo` array has an unexpected key `bar`.',
             $exception->getMessage()
         );
@@ -69,7 +69,7 @@ class ValidationTest extends MevetoTestCase
         $exception = new InputDataInvalidException(['a', 'b']);
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             'The following errors occurred while processing your request: (`a`, `b`)',
             $exception->getMessage()
         );
@@ -84,7 +84,7 @@ class ValidationTest extends MevetoTestCase
         $exception = new StateRequiredException();
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             'Current application request state can not be empty.',
             $exception->getMessage()
         );
@@ -99,7 +99,7 @@ class ValidationTest extends MevetoTestCase
         $exception = new StateTooShortException(42);
 
         // assert message matches (partially).
-        static::assertContains(
+        static::assertStringHasString(
             'Current application request state must be at least `42` characters long.',
             $exception->getMessage()
         );

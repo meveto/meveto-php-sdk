@@ -23,11 +23,11 @@ class InvalidClientTest extends MevetoTestCase
         $message = $exception->getMessage();
 
         // assert message matches (partially).
-        static::assertContains('Your Meveto client credentials are incorrect.', $message);
-        static::assertContains('Check your client ID, secret and redirect URL.', $message);
-        static::assertContains('Check your client ID, secret and redirect URL.', $message);
-        static::assertContains('Redirect URL must be exactly the same as', $message);
-        static::assertContains('provided at the time of client registration.', $message);
+        static::assertStringHasString('Your Meveto client credentials are incorrect.', $message);
+        static::assertStringHasString('Check your client ID, secret and redirect URL.', $message);
+        static::assertStringHasString('Check your client ID, secret and redirect URL.', $message);
+        static::assertStringHasString('Redirect URL must be exactly the same as', $message);
+        static::assertStringHasString('provided at the time of client registration.', $message);
     }
 
     /**
@@ -39,7 +39,7 @@ class InvalidClientTest extends MevetoTestCase
         $exception = new ClientErrorException('some-custom-error');
 
         // assert message matches (partially).
-        static::assertContains('following error', $exception->getMessage());
-        static::assertContains('some-custom-error', $exception->getMessage());
+        static::assertStringHasString('following error', $exception->getMessage());
+        static::assertStringHasString('some-custom-error', $exception->getMessage());
     }
 }
