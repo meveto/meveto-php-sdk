@@ -72,17 +72,17 @@ class MevetoServer
     /**
      * @var string
      */
-    protected $resourceEndpoint;
+    protected $resourceEndpoint = 'https://prod.meveto.com/api/client/user';
 
     /**
      * @var string
      */
-    protected $aliasEndpoint;
+    protected $aliasEndpoint = 'https://prod.meveto.com/api/client/user/alias';
 
     /**
      * @var string
      */
-    protected $eventUserEndpoint;
+    protected $eventUserEndpoint = 'https://prod.meveto.com/api/client/user-for-token';
 
     /**
      * MevetoServer constructor.
@@ -275,7 +275,7 @@ class MevetoServer
      */
     public function accessToken(string $authCode): array
     {
-        $response = $this->http->request('POST', $this->config['tokenEndpoint'], [
+        return $this->makeHttpCall('POST', $this->config['tokenEndpoint'], [
             'form_params' => [
                 'grant_type' => 'authorization_code',
                 'client_id' => $this->config['id'],
@@ -284,18 +284,6 @@ class MevetoServer
                 'code' => $authCode,
             ],
         ]);
-
-        $content = json_decode((string) $response->getBody(), true);
-
-        if (isset($content['error'])) {
-            if ($content['error'] === 'invalid_client') {
-                throw new ClientNotFoundException('');
-            }
-
-            throw new ClientErrorException($content['error_description']);
-        }
-
-        return $content;
     }
 
     /**
@@ -314,31 +302,15 @@ class MevetoServer
      */
     public function resourceOwnerData(string $token): array
     {
-        try {
-            $response = $this->http->request('GET', $this->resourceEndpoint, [
-                'query' => [
-                    'client_id' => $this->config['id'],
-                ],
-                'headers' => [
-                    'Accept'     => 'application/json',
-                'Authorization' => 'Bearer '.$token,
-                ],
-            ]);
-        } catch (ClientException $e) {
-            throw $e;
-        }
-        if ($response->getStatusCode() === 401) {
-            throw new NotAuthenticatedException('');
-        }
-        if ($response->getStatusCode() === 403) {
-            throw new NotAuthorizedException('');
-        }
-
-        $content = json_decode((string) $response->getBody(), true);
-
-        if (isset($content['error'])) {
-            throw new ClientErrorException($content['error_description']);
-        }
+        $content = $this->makeHttpCall('GET', $this->resourceEndpoint, [
+            'query' => [
+                'client_id' => $this->config['id'],
+            ],
+            'headers' => [
+                'Accept'     => 'application/json',
+            'Authorization' => 'Bearer '.$token,
+            ],
+        ]);
 
         if (! isset($content['payload'])) {
             throw new ClientErrorException('Empty payload');
@@ -364,7 +336,7 @@ class MevetoServer
      */
     public function synchronizeUserID(string $token, string $user): bool
     {
-        $response = $this->http->request('POST', $this->aliasEndpoint, [
+        $content = $this->makeHttpCall('POST', $this->aliasEndpoint, [
             'form_params' => [
                 'client_id' => $this->config['id'],
                 'alias_name' => $user,
@@ -375,25 +347,8 @@ class MevetoServer
             ],
         ]);
 
-        if ($response->getStatusCode() === 401) {
-            throw new NotAuthenticatedException('');
-        }
-        if ($response->getStatusCode() === 403) {
-            throw new NotAuthorizedException('');
-        }
-
-        $content = json_decode((string) $response->getBody(), true);
-
-        if (isset($content['error'])) {
-            throw new ClientErrorException($content['error_description']);
-        }
-
         if ($content['status'] === 'Alias_Added_Successfully') {
             return true;
-        }
-
-        if ($content['status'] === 'Input_Data_Validation_Failed') {
-            throw new InputDataInvalidException($content['errors']);
         }
 
         return false;
@@ -412,24 +367,14 @@ class MevetoServer
      */
     public function tokenUser(string $userToken): string
     {
-        try {
-            $response = $this->http->request('GET', $this->eventUserEndpoint, [
-                'query' => [
-                    'token' => $userToken,
-                ],
-                'headers' => [
-                    'Accept'     => 'application/json',
-                ],
-            ]);
-        } catch (ClientException $e) {
-            throw $e;
-        }
-
-        $content = json_decode((string) $response->getBody(), true);
-
-        if (isset($content['error'])) {
-            throw new ClientErrorException($content['error_description']);
-        }
+        $content = $this->makeHttpCall('GET', $this->eventUserEndpoint, [
+            'query' => [
+                'token' => $userToken,
+            ],
+            'headers' => [
+                'Accept'     => 'application/json',
+            ],
+        ]);
 
         if ($content['status'] !== 'Token_User_Retrieved') {
             throw new ClientErrorException('Error retrieving token.');
@@ -479,6 +424,8 @@ class MevetoServer
      * @throws NotAuthenticatedException
      * @throws NotAuthorizedException
      * @throws ClientErrorException
+     * @throws InputDataInvalidException
+     * @throws ClientNotFoundException
      *
      * @returns array
      */
@@ -500,7 +447,15 @@ class MevetoServer
         $content = json_decode((string) $response->getBody(), true);
 
         if (isset($content['error'])) {
+            if ($content['error'] === 'invalid_client') {
+                throw new ClientNotFoundException('');
+            }
+
             throw new ClientErrorException($content['error_description']);
+        }
+
+        if (isset($content['status']) && $content['status'] === 'Input_Data_Validation_Failed') {
+            throw new InputDataInvalidException($content['errors']);
         }
 
         return $content;

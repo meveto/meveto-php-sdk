@@ -11,6 +11,7 @@ use Meveto\Client\Exceptions\InvalidClient\ClientErrorException;
 use Meveto\Client\Exceptions\InvalidClient\ClientNotFoundException;
 use Meveto\Client\Exceptions\InvalidConfig\ArchitectureNotSupportedException;
 use Meveto\Client\Exceptions\InvalidConfig\StateNotSetException;
+use Meveto\Client\Exceptions\Validation\InputDataInvalidException;
 use Meveto\Client\Exceptions\Validation\KeyNotValidException;
 use Meveto\Client\Exceptions\Validation\StateRequiredException;
 use Meveto\Client\Exceptions\Validation\StateTooShortException;
@@ -601,6 +602,90 @@ class MevetoServerTest extends MevetoTestCase
         } catch (ClientErrorException $e) {
             // assert proper message.
             static::assertStringHasString('Custom Error Message Foo', $e->getMessage());
+        }
+    }
+
+    /**
+     * Test make http call.
+     *
+     * @throws
+     */
+    public function testMakeHttpCallMethod()
+    {
+        $tokenEndpoint = 'https://prod.meveto.com/oauth/token/foo/bar';
+        $authCode = 'foo-bar-baz';
+
+        $config = [
+            'tokenEndpoint' => $tokenEndpoint,
+            'id' => 'foo',
+            'secret' => 'bar',
+            'redirect_url' => 'https://foo.bar.com/back'
+        ];
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('request')
+            ->willReturn(new Response(401, [], '{ "error": "login_failed", "error_description": "Bad for you!" }'));
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // set config on server.
+        $server->config($config);
+
+        try {
+            // call access code method.
+            $server->accessToken($authCode);
+        } catch (NotAuthenticatedException $e) {
+            // assert proper message.
+            static::assertStringHasString('responded with a 401 status', $e->getMessage());
+        }
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('request')
+            ->willReturn(new Response(200, [], '{ "error": "invalid_client", "error_description": "Bad for you!" }'));
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // set config on server.
+        $server->config($config);
+
+        try {
+            // call access code method.
+            $server->accessToken($authCode);
+        } catch (ClientNotFoundException $e) {
+            // assert proper message.
+            static::assertStringHasString('Your Meveto client credentials are incorrect', $e->getMessage());
+        }
+
+        // start mock http client.
+        $http = $this->createMock(Client::class);
+
+        // configure mock http client.
+        $http->expects(static::once())
+            ->method('request')
+            ->willReturn(new Response(200, [], '{ "status": "Input_Data_Validation_Failed", "errors": [] }'));
+
+        // start server instance with custom http.
+        $server = new MevetoServer($http);
+
+        // set config on server.
+        $server->config($config);
+
+        try {
+            // call access code method.
+            $server->accessToken($authCode);
+        } catch (InputDataInvalidException $e) {
+            // assert proper message.
+            static::assertStringHasString('The following errors occurred while processing', $e->getMessage());
         }
     }
 
