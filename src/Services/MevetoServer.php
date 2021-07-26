@@ -44,9 +44,6 @@ class MevetoServer
     protected $resourceEndpoint;
 
     /** @var */
-    protected $aliasEndpoint;
-
-    /** @var */
     protected $eventUserEndpoint;
 
     public function __construct()
@@ -142,17 +139,6 @@ class MevetoServer
     public function resourceEndpoint(string $api_url): void
     {
         $this->resourceEndpoint = $api_url;
-    }
-
-    /**
-     * Set the alias endpoint
-     * 
-     * @param string $api_url
-     * @return void
-     */
-    public function aliasEndpoint(string $api_url): void
-    {
-        $this->aliasEndpoint = $api_url;
     }
 
     /**
@@ -287,57 +273,6 @@ class MevetoServer
         {
             return $content['payload'];
         }
-    }
-
-    /**
-     * Synchronize access token owner's Meveto identifier with a local identifier of the user
-     * 
-     * @param string $token The access token
-     * @param string $user The local user identifier
-     * @return bool True if synchronization is successful false otherwise
-     * 
-     * @throws notAuthenticated
-     * @throws notAuthorized
-     * @throws clientError
-     */
-    public function synchronizeUserID(string $token, string $user): bool
-    {
-        $response = $this->http->post($this->aliasEndpoint, [
-            'form_params' => [
-                'client_id' => $this->config['id'],
-                'alias_name' => $user,
-            ],
-            'headers' => [
-                'Accept'     => 'application/json',
-                'Authorization' => 'Bearer '.$token,
-            ]
-        ]);
-
-        if($response->getStatusCode() == '401')
-        {
-            throw Http::notAuthenticated();
-        }
-        if($response->getStatusCode() == '403')
-        {
-            throw Http::notAuthorized();
-        }
-    
-        $content = json_decode((string) $response->getBody(), true);
-
-        if (isset($content["error"]))
-        {
-            throw InvalidClient::clientError($content["error_description"]);
-        }
-
-        if($content['status'] == 'Alias_Added_Successfully')
-        {
-            return true;
-        } else if($content['status'] == 'Input_Data_Validation_Failed')
-        {
-            throw Validation::inputDataInvalid($content['errors']);
-        }
-
-        return false;
     }
 
     /**

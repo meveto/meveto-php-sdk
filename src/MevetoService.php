@@ -34,7 +34,6 @@ class MevetoService
         $this->setArchitecture($architecture);
         $this->setConfig($config);
         $this->setResourceEndpoint("https://prod.meveto.com/api/client/user");
-        $this->setAliasEndpoint("https://prod.meveto.com/api/client/user/alias");        
         $this->setUserEndpoint("https://prod.meveto.com/api/client/user-for-token");
     }
 
@@ -74,17 +73,6 @@ class MevetoService
     public function setResourceEndpoint(string $api_url): void
     {
         $this->MevetoServer->resourceEndpoint($api_url);
-    }
-
-    /**
-     * Set Meveto's alias endpoint that can be used to synchronize Meveto and local user identifiers in case these are different.
-     * 
-     * @param string $api_url The endpoint
-     * @return void
-     */
-    protected function setAliasEndpoint(string $api_url): void
-    {
-        $this->MevetoServer->aliasEndpoint($api_url);
     }
 
     /**
