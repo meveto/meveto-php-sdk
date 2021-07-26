@@ -71,7 +71,7 @@ class MevetoService
      * @param string $api_url The endpoint
      * @return void
      */
-    protected function setResourceEndpoint(string $api_url): void
+    public function setResourceEndpoint(string $api_url): void
     {
         $this->MevetoServer->resourceEndpoint($api_url);
     }
@@ -93,7 +93,7 @@ class MevetoService
      * @param string $api_url The endpoint
      * @return void
      */
-    protected function setUserEndpoint(string $api_url): void
+    public function setUserEndpoint(string $api_url): void
     {
         $this->MevetoServer->eventUserEndpoint($api_url);
     }
